@@ -13,7 +13,7 @@
   --line:#dde2ea; --line-strong:#c6cdd8;
   --accent:#2453c4; --accent-ink:#ffffff; --accent-soft:#e4ebfb;
   --bar:#4b74d8; --bar-ink:#ffffff; --bar-done:#b9c1ce; --phase:#2b3445; --mile:#d4861a;
-  --weekend:#edf0f5; --today:#e0453f; --late:#e5675f;
+  --weekend:#edf0f5; --today:#e0453f; --late:#e5675f; --tg0:#2453c4; --tg1:#b4531f; --tg2:#1f7a5a; --tg3:#8a3fb3; --tg4:#a0346b; --tg5:#5d6b12;
   --ok:#24935f; --ok-soft:#e1f3ea; --warn:#c77c12; --warn-soft:#fbf0dc; --bad:#d2403a; --bad-soft:#fbe5e3; --pause:#6f7888; --pause-soft:#eceef2;
   --shadow:0 1px 2px rgba(24,32,45,.06),0 4px 16px rgba(24,32,45,.06);
   --f-ui:"Nunito","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
@@ -25,7 +25,7 @@
   --line:#2b313d; --line-strong:#3a4250;
   --accent:#86a3f2; --accent-ink:#0f1420; --accent-soft:#222c44;
   --bar:#5d82e2; --bar-ink:#ffffff; --bar-done:#3d4452; --phase:#c8cfdb; --mile:#f0a63a;
-  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b;
+  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b; --tg0:#86a3f2; --tg1:#f0a06a; --tg2:#5fcf9f; --tg3:#c590ee; --tg4:#ee8bbd; --tg5:#b9c75a;
   --ok:#4cc58a; --ok-soft:#183026; --warn:#f0a63a; --warn-soft:#33281a; --bad:#ff6a64; --bad-soft:#3a1f1f; --pause:#9aa3b2; --pause-soft:#262b34;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
   color-scheme:dark;
@@ -35,7 +35,7 @@
   --line:#2b313d; --line-strong:#3a4250;
   --accent:#86a3f2; --accent-ink:#0f1420; --accent-soft:#222c44;
   --bar:#5d82e2; --bar-ink:#ffffff; --bar-done:#3d4452; --phase:#c8cfdb; --mile:#f0a63a;
-  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b;
+  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b; --tg0:#86a3f2; --tg1:#f0a06a; --tg2:#5fcf9f; --tg3:#c590ee; --tg4:#ee8bbd; --tg5:#b9c75a;
   --ok:#4cc58a; --ok-soft:#183026; --warn:#f0a63a; --warn-soft:#33281a; --bad:#ff6a64; --bad-soft:#3a1f1f; --pause:#9aa3b2; --pause-soft:#262b34;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
   color-scheme:dark;
@@ -157,6 +157,31 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .week-nav{display:flex;align-items:center;gap:4px}
 .week-nav .range{font-family:var(--f-mono);font-size:13px;min-width:120px;text-align:center}
 
+/* home tabs + filters */
+.tabs{display:inline-flex;gap:3px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px}
+.tabs button{border:0;background:transparent;padding:6px 16px;border-radius:6px;font-weight:600;color:var(--muted)}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--accent);color:var(--accent-ink)}
+.home-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.filters{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
+.filters label{font-size:12.5px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.filters select,.filters input{height:30px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);padding:0 8px;font-size:13px;max-width:200px}
+.filters select:focus,.filters input:focus{border-color:var(--accent);outline:2px solid var(--accent-soft)}
+.week-sum{font-size:12.5px;color:var(--muted)}
+.week-sum b{color:var(--ink);font-weight:600}
+.day-empty{font-size:12px;color:var(--faint);padding:6px 4px}
+.add-hint{font-size:12px;color:var(--faint);padding:8px 6px}
+.tx-btn{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer;overflow-wrap:anywhere}
+.tx-btn:hover{color:var(--accent)}
+.tmeta{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.ptag{font-size:11px;font-weight:600;padding:0 6px;border-radius:4px;line-height:18px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who{font-size:11px;color:var(--muted);line-height:16px;border:1px solid var(--line);background:var(--surface-2);border-radius:4px;padding:0 5px;white-space:nowrap}
+.tg0{color:var(--tg0);background:color-mix(in srgb,var(--tg0) 14%,transparent)}
+.tg1{color:var(--tg1);background:color-mix(in srgb,var(--tg1) 14%,transparent)}
+.tg2{color:var(--tg2);background:color-mix(in srgb,var(--tg2) 14%,transparent)}
+.tg3{color:var(--tg3);background:color-mix(in srgb,var(--tg3) 14%,transparent)}
+.tg4{color:var(--tg4);background:color-mix(in srgb,var(--tg4) 14%,transparent)}
+.tg5{color:var(--tg5);background:color-mix(in srgb,var(--tg5) 14%,transparent)}
 /* todo */
 .todo-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 .todo-grid{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1050px}
@@ -174,7 +199,8 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .todo:hover{background:var(--accent-soft)}
 .todo input[type=checkbox]{margin:3px 0 0;accent-color:var(--accent);width:14px;height:14px}
 .todo .tx{min-width:0;overflow-wrap:anywhere}
-.todo.done .tx{text-decoration:line-through;color:var(--faint)}
+.todo.done .tx{color:var(--faint)}
+.todo.done .tx-btn,.todo.done .tx>:not(.tmeta){text-decoration:line-through}
 .todo .from{display:block;font-size:11px;color:var(--warn);font-weight:500}
 .todo .del{opacity:0;width:22px;height:22px;border:0;background:transparent;color:var(--faint);border-radius:4px;display:grid;place-items:center}
 .todo:hover .del,.todo .del:focus-visible{opacity:1}
@@ -248,7 +274,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .mile.done{background:var(--bar-done)}
 .mile.conflict{box-shadow:0 0 0 2px var(--bad)}
 .mile-lbl{position:absolute;top:15px;transform:translateY(-50%);font-size:11px;font-family:var(--f-mono);color:var(--muted);white-space:nowrap;pointer-events:none;z-index:2}
-.ghost{position:absolute;bottom:4px;height:4px;border-radius:2px;background:var(--faint);opacity:.6;z-index:1;pointer-events:none}
+.base-ghost{position:absolute;bottom:4px;height:4px;border-radius:2px;background:var(--faint);opacity:.6;z-index:1;pointer-events:none}
 .ghost-mile{position:absolute;top:15px;width:12px;height:12px;margin:-6px 0 0 -6px;transform:rotate(45deg);border:1.5px dashed var(--faint);border-radius:2px;z-index:1;pointer-events:none}
 .delay-tag{position:absolute;top:15px;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--bad);white-space:nowrap;z-index:2;pointer-events:none}
 .g-lbl .lk{flex:none;width:22px;height:22px;border:0;background:transparent;border-radius:5px;display:grid;place-items:center;padding:0;color:var(--faint);opacity:0}
@@ -477,6 +503,12 @@ function normalize(p, id) {
     });
   });
   p.todos = (p.todos && typeof p.todos === 'object') ? p.todos : {};
+  Object.keys(p.todos).forEach(d => {
+    if (!isDate(d) || !Array.isArray(p.todos[d])) { delete p.todos[d]; return; }
+    p.todos[d] = p.todos[d].filter(x => x && x.text);
+    p.todos[d].forEach(x => { x.id = x.id || newId(); x.done = !!x.done; x.who = typeof x.who === 'string' ? x.who : ''; });
+    if (!p.todos[d].length) delete p.todos[d];
+  });
   p.checklist = Array.isArray(p.checklist) ? p.checklist.filter(x => x && x.text) : [];
   p.checklist.forEach(x => { x.id = x.id || newId(); x.done = !!x.done; });
   p.notes = typeof p.notes === 'string' ? p.notes : '';
@@ -583,7 +615,10 @@ function rollover(p) {
 }
 
 /* ---------- UI state ---------- */
-const UI = { view: 'home', pid: null, weekOffset: 0 };
+const UI = { view: 'home', pid: null, weekOffset: 0, homeWeekOffset: 0, homeTab: 'projects', f: { who: '', pid: '', st: 'open' }, addPid: '', addWho: {} };
+const PREF_KEY = 'project-gantt-home';
+try { const pr = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); if (pr.tab) UI.homeTab = pr.tab; if (pr.f) Object.assign(UI.f, pr.f); if (pr.addPid) UI.addPid = pr.addPid; } catch (_) {}
+function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify({ tab: UI.homeTab, f: UI.f, addPid: UI.addPid })); } catch (_) {} }
 const G = {}; // gantt layout cache
 
 function toast(msg) {
@@ -639,11 +674,16 @@ function renderHome() {
     </div>
   </div></header>
   <main class="wrap home-main">
-    ${list.length ? `<div class="home-summary"><span><b>${list.length}</b>個專案</span><span><b>${counts.active}</b>進行中</span><span><b>${counts.late}</b>延遲</span><span><b>${counts.pause}</b>暫停</span><span><b>${counts.done}</b>完成</span></div>
+    ${list.length ? `<div class="home-bar"><div class="tabs" role="tablist" aria-label="首頁檢視">
+      <button role="tab" data-act="home-tab" data-tab="projects" class="${UI.homeTab === 'projects' ? 'on' : ''}" aria-selected="${UI.homeTab === 'projects'}">專案目錄</button>
+      <button role="tab" data-act="home-tab" data-tab="week" class="${UI.homeTab === 'week' ? 'on' : ''}" aria-selected="${UI.homeTab === 'week'}">每週待辦</button>
+    </div></div>` : ''}
+    ${list.length && UI.homeTab === 'week' ? `<section id="todo-sec"></section>` : list.length ? `<div class="home-summary"><span><b>${list.length}</b>個專案</span><span><b>${counts.active}</b>進行中</span><span><b>${counts.late}</b>延遲</span><span><b>${counts.pause}</b>暫停</span><span><b>${counts.done}</b>完成</span></div>
     <div class="cards">${cards}</div>` :
     `<div class="empty"><h2>還沒有專案</h2><p>按「新增專案」,填入客戶、專案名稱和起訖日期,就會建立專案的甘特圖。</p><button class="btn primary" data-act="new-project">${ICON.plus}新增專案</button></div>`}
     <div class="footnote">${saveStateHtml()}<span>${Store.mode === 'db' ? '資料存在你的 Claude 帳號,換裝置也看得到。' : '資料只存在這個瀏覽器,建議定期匯出備份。'}</span></div>
   </main>`;
+  if ($('#todo-sec')) renderTodos(null);
 }
 
 /* ---------- project ---------- */
@@ -719,32 +759,107 @@ function renderSide(p) {
     </div>`;
 }
 
+const whoOf = (p, x) => x.who || p.owner || '';
+function allPeople() {
+  const set = new Set();
+  Store.list().forEach(p => { if (p.owner) set.add(p.owner); Object.values(p.todos).forEach(l => l.forEach(x => { if (x.who) set.add(x.who); })); });
+  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+}
+function projTag(pid) { let h = 0; for (const c of pid) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; }
+const projLabel = p => p.client ? `${p.client}|${p.name}` : p.name;
+const byProjectName = (a, b) => projLabel(a).localeCompare(projLabel(b), 'zh-Hant');
+function todoLi(p, d, x, showProj) {
+  const who = whoOf(p, x);
+  const k = `data-pid="${p.id}" data-d="${d}" data-id="${x.id}"`;
+  return `<li class="todo${x.done ? ' done' : ''}">
+    <input type="checkbox" data-act="todo-toggle" ${k} ${x.done ? 'checked' : ''} aria-label="完成">
+    <span class="tx"><button class="tx-btn" data-act="todo-edit" ${k} title="編輯">${esc(x.text)}</button>${x.from && x.from !== d ? `<span class="from">延自 ${md(x.from)}</span>` : ''}
+      ${showProj || who ? `<span class="tmeta">${showProj ? `<span class="ptag tg${projTag(p.id)}" title="${esc(projLabel(p))}">${esc(projLabel(p))}</span>` : ''}${who ? `<span class="who">${esc(who)}</span>` : ''}</span>` : ''}</span>
+    <button class="del" data-act="todo-del" ${k} aria-label="刪除">${ICON.x}</button></li>`;
+}
+/* p = a project -> only that project's to-dos; p = null -> every project, filtered */
 function renderTodos(p) {
+  const el = $('#todo-sec'); if (!el) return;
+  const all = !p;
   const t = todayStr();
-  const mon = addDays(mondayOf(t), UI.weekOffset * 7);
+  const off = all ? UI.homeWeekOffset : UI.weekOffset;
+  const mon = addDays(mondayOf(t), off * 7);
   const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
+  const projects = all ? Store.list().sort(byProjectName) : [p];
+  if (all && UI.f.pid && !Store.get(UI.f.pid)) UI.f.pid = '';
+  const scope = all ? projects.filter(q => !UI.f.pid || q.id === UI.f.pid) : projects;
+  const pass = (q, x) => !all || ((!UI.f.who || whoOf(q, x) === UI.f.who) && (UI.f.st === 'all' || (UI.f.st === 'open' ? !x.done : x.done)));
+  const addTarget = all ? Store.get(UI.f.pid || UI.addPid) || null : p;
+  let total = 0, open = 0;
   const cols = days.map(d => {
-    const list = p.todos[d] || [];
+    const entries = scope.flatMap(q => (q.todos[d] || []).map(x => ({ q, x }))).filter(({ q, x }) => pass(q, x));
+    total += entries.length; open += entries.filter(e => !e.x.done).length;
     const wd = dow(d);
     const cls = ['day', (wd === 0 || wd === 6) && 'weekend', d === t && 'today', d < t && 'past'].filter(Boolean).join(' ');
     return `<div class="${cls}">
       <div class="day-h"><span class="wd">週${WD[wd]}${d === t ? ' · 今天' : ''}</span><span class="dt">${md(d)}</span></div>
-      <ul class="todo-list">${list.map(x => `<li class="todo${x.done ? ' done' : ''}">
-        <input type="checkbox" data-act="todo-toggle" data-d="${d}" data-id="${x.id}" ${x.done ? 'checked' : ''} aria-label="完成">
-        <span class="tx">${esc(x.text)}${x.from && x.from !== d ? `<span class="from">延自 ${md(x.from)}</span>` : ''}</span>
-        <button class="del" data-act="todo-del" data-d="${d}" data-id="${x.id}" aria-label="刪除">${ICON.x}</button></li>`).join('')}</ul>
-      <div class="todo-add"><input type="text" id="todo-in-${d}" data-todo-add="${d}" placeholder="+ 新增待辦" aria-label="${md(d)} 新增待辦"></div>
+      <ul class="todo-list">${entries.map(({ q, x }) => todoLi(q, d, x, all)).join('')}</ul>
+      ${addTarget ? `<div class="todo-add"><input type="text" id="todo-in-${d}" data-todo-add="${d}" data-pid="${addTarget.id}" placeholder="+ 新增待辦" aria-label="${md(d)} 新增待辦到 ${esc(projLabel(addTarget))}"></div>` : (d === days[0] ? '<div class="add-hint">先在上方選專案,就能新增待辦</div>' : '')}
     </div>`;
   }).join('');
-  $('#todo-sec').innerHTML = `
-    <div class="sec-head"><h2>每週待辦<span class="sub">沒完成的項目會自動移到今天</span></h2>
+  const people = allPeople();
+  const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
+  const filters = all ? `<div class="filters">
+      <label>人員<select id="f-who">${opt('', '全部人員', UI.f.who)}${people.map(n => opt(n, n, UI.f.who)).join('')}</select></label>
+      <label>專案<select id="f-pid">${opt('', '全部專案', UI.f.pid)}${projects.map(q => opt(q.id, projLabel(q), UI.f.pid)).join('')}</select></label>
+      <label>狀態<select id="f-st">${opt('open', '未完成', UI.f.st)}${opt('done', '已完成', UI.f.st)}${opt('all', '全部', UI.f.st)}</select></label>
+      ${UI.f.pid ? '' : `<label>新增到<select id="add-pid">${opt('', '選擇專案…', UI.addPid)}${projects.map(q => opt(q.id, projLabel(q), UI.addPid)).join('')}</select></label>`}
+    </div>` : `<div class="filters"><label>新增時指派給<input type="text" id="add-who" list="people-dl" value="${esc(UI.addWho[p.id] ?? p.owner)}" placeholder="負責人" style="width:120px"></label></div>`;
+  el.innerHTML = `
+    <div class="sec-head"><h2>每週待辦<span class="sub">${all ? '所有專案;沒完成的項目會自動移到今天' : '只顯示這個專案;沒完成的項目會自動移到今天'}</span></h2>
       <div class="week-nav">
         <button class="icon-btn" data-act="week" data-d="-1" aria-label="上一週">${ICON.left}</button>
         <span class="range">${md(days[0])} – ${md(days[6])}</span>
         <button class="icon-btn" data-act="week" data-d="1" aria-label="下一週">${ICON.right}</button>
-        ${UI.weekOffset ? `<button class="btn sm ghost" data-act="week" data-d="0">回本週</button>` : ''}
+        ${off ? `<button class="btn sm ghost" data-act="week" data-d="0">回本週</button>` : ''}
       </div></div>
-    <div class="todo-scroll"><div class="todo-grid">${cols}</div></div>`;
+    <div class="sec-head" style="margin-top:-2px">${filters}<span class="week-sum">本週 <b class="num">${total}</b> 項${all && UI.f.st !== 'all' ? '' : ` · 未完成 <b class="num">${open}</b>`}</span></div>
+    <datalist id="people-dl">${people.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>
+    <div class="todo-scroll"><div class="todo-grid">${cols}</div></div>
+    ${all && !total ? `<p class="hint" style="margin:10px 2px 0">這週沒有符合篩選條件的待辦。</p>` : ''}`;
+}
+const rerenderTodos = () => renderTodos(UI.view === 'project' ? Store.get(UI.pid) : null);
+
+function openTodoModal(p, d, id) {
+  const x = (p.todos[d] || []).find(y => y.id === id); if (!x) return;
+  const projects = Store.list().sort(byProjectName);
+  openModal(`${mHead('編輯待辦')}
+    <form id="tdform" class="modal-b" novalidate>
+      <div class="field"><label for="td-text">內容</label><input type="text" id="td-text" value="${esc(x.text)}"></div>
+      <div class="row2">
+        <div class="field"><label for="td-who">負責人</label><input type="text" id="td-who" list="people-dl2" value="${esc(whoOf(p, x))}" placeholder="負責人"></div>
+        <div class="field"><label for="td-date">日期</label><input type="date" id="td-date" value="${d}"></div>
+      </div>
+      <div class="field"><label for="td-pid">專案</label><select id="td-pid">${projects.map(q => `<option value="${q.id}"${q.id === p.id ? ' selected' : ''}>${esc(projLabel(q))}</option>`).join('')}</select></div>
+      <label class="check-line"><input type="checkbox" id="td-done" ${x.done ? 'checked' : ''}>已完成</label>
+      <datalist id="people-dl2">${allPeople().map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>
+      <div class="err" id="td-err"></div>
+    </form>
+    <div class="modal-f"><button class="btn danger" type="button" id="td-del">刪除</button>
+      <div class="r"><button class="btn" data-act="close-modal">取消</button><button class="btn primary" type="submit" form="tdform">儲存</button></div></div>`, () => {
+    $('#tdform').addEventListener('submit', e => {
+      e.preventDefault();
+      const text = $('#td-text').value.trim(), nd = $('#td-date').value, np = Store.get($('#td-pid').value);
+      if (!text) { $('#td-err').textContent = '請填寫內容'; return; }
+      if (!isDate(nd)) { $('#td-err').textContent = '請選擇日期'; return; }
+      const who = $('#td-who').value.trim();
+      p.todos[d] = p.todos[d].filter(y => y !== x); if (!p.todos[d].length) delete p.todos[d];
+      Object.assign(x, { text, done: $('#td-done').checked, who: who === np.owner ? '' : who });
+      if (nd !== d || np !== p) delete x.from;
+      (np.todos[nd] = np.todos[nd] || []).push(x);
+      Store.save(p); if (np !== p) Store.save(np);
+      closeModal(); rerenderTodos(); toast('已儲存');
+    });
+    $('#td-del').addEventListener('click', () => {
+      p.todos[d] = p.todos[d].filter(y => y !== x); if (!p.todos[d].length) delete p.todos[d];
+      Store.save(p); closeModal(); rerenderTodos(); toast('已刪除待辦');
+    });
+  });
 }
 
 /* ---------- gantt ---------- */
@@ -810,7 +925,7 @@ function renderGantt(p) {
       shape = it.segs.map((sg, si) => {
         const x = (toDn(sg.start) - p0) * dw, w = (toDn(sg.end) - toDn(sg.start) + 1) * dw;
         const moved = sg.bs !== sg.start || sg.be !== sg.end;
-        const ghost = moved ? `<div class="ghost" style="left:${(toDn(sg.bs) - p0) * dw}px;width:${(toDn(sg.be) - toDn(sg.bs) + 1) * dw}px"></div>` : '';
+        const ghost = moved ? `<div class="base-ghost" style="left:${(toDn(sg.bs) - p0) * dw}px;width:${(toDn(sg.be) - toDn(sg.bs) + 1) * dw}px"></div>` : '';
         const cut = (toDn(sg.be) - toDn(sg.start) + 1) * dw;
         const lateBg = !it.done && sg.end > sg.be ? `;background:linear-gradient(90deg,var(--bar) ${Math.max(0, cut)}px,var(--late) ${Math.max(0, cut)}px)` : '';
         const sd = daysBetween(sg.be, sg.end);
@@ -1190,8 +1305,15 @@ document.addEventListener('click', e => {
     case 'export': doExport(); break;
     case 'import': $('#import-file').click(); break;
     case 'close-modal': e.preventDefault(); closeModal(); break;
-    case 'week': { const d = +a.dataset.d; UI.weekOffset = d === 0 ? 0 : UI.weekOffset + d; renderTodos(p); break; }
-    case 'todo-del': { const d = a.dataset.d; p.todos[d] = (p.todos[d] || []).filter(x => x.id !== a.dataset.id); if (!p.todos[d].length) delete p.todos[d]; Store.save(p); renderTodos(p); break; }
+    case 'week': {
+      const d = +a.dataset.d;
+      if (UI.view === 'project') UI.weekOffset = d === 0 ? 0 : UI.weekOffset + d;
+      else UI.homeWeekOffset = d === 0 ? 0 : UI.homeWeekOffset + d;
+      rerenderTodos(); break;
+    }
+    case 'home-tab': UI.homeTab = a.dataset.tab; savePrefs(); renderHome(); break;
+    case 'todo-edit': { const q = Store.get(a.dataset.pid); if (q) openTodoModal(q, a.dataset.d, a.dataset.id); break; }
+    case 'todo-del': { const q = Store.get(a.dataset.pid); if (!q) break; const d = a.dataset.d; q.todos[d] = (q.todos[d] || []).filter(x => x.id !== a.dataset.id); if (!q.todos[d].length) delete q.todos[d]; Store.save(q); rerenderTodos(); break; }
     case 'add-phase': openPhaseModal(p, null); break;
     case 'set-baseline': openBaselineModal(p); break;
     case 'side-toggle': {
@@ -1220,10 +1342,18 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('change', e => {
-  const a = e.target; const p = UI.pid ? Store.get(UI.pid) : null; if (!p) return;
+  const a = e.target;
+  if (a.id === 'f-who' || a.id === 'f-pid' || a.id === 'f-st') { UI.f[a.id.slice(2)] = a.value; savePrefs(); renderTodos(null); return; }
+  if (a.id === 'add-pid') { UI.addPid = a.value; savePrefs(); renderTodos(null); return; }
+  if (a.id === 'add-who' && UI.pid) { UI.addWho[UI.pid] = a.value.trim(); return; }
+  if (a.dataset.act === 'todo-toggle') {
+    const q = Store.get(a.dataset.pid); const x = q && (q.todos[a.dataset.d] || []).find(y => y.id === a.dataset.id);
+    if (x) { x.done = a.checked; Store.save(q); if (UI.view === 'home' && UI.f.st !== 'all') setTimeout(() => renderTodos(null), 350); else a.closest('.todo').classList.toggle('done', x.done); }
+    return;
+  }
+  const p = UI.pid ? Store.get(UI.pid) : null; if (!p) return;
   if (a.id === 'status-sel') { p.status = a.value; a.className = 'status-select st-' + p.status; Store.save(p); return; }
   if (a.dataset.act === 'check-toggle') { const x = p.checklist.find(y => y.id === a.dataset.id); if (x) { x.done = a.checked; Store.save(p); renderSide(p); } return; }
-  if (a.dataset.act === 'todo-toggle') { const x = (p.todos[a.dataset.d] || []).find(y => y.id === a.dataset.id); if (x) { x.done = a.checked; Store.save(p); a.closest('.todo').classList.toggle('done', x.done); } return; }
   if (a.dataset.act === 'toggle-done') { const f = findItem(p, a.dataset.id); if (f) { f.it.done = a.checked; Store.save(p); const b = $('#gantt'); const sl = b ? b.scrollLeft : 0; renderGantt(p); if ($('#gantt')) $('#gantt').scrollLeft = sl; } }
 });
 let notesT;
@@ -1243,9 +1373,12 @@ document.addEventListener('keydown', e => {
   }
   if (!a.dataset || !a.dataset.todoAdd || e.key !== 'Enter' || e.isComposing) return;
   const text = a.value.trim(); if (!text) return;
-  const p = Store.get(UI.pid); const d = a.dataset.todoAdd;
-  (p.todos[d] = p.todos[d] || []).push({ id: newId(), text, done: false });
-  Store.save(p); renderTodos(p);
+  const p = Store.get(a.dataset.pid || UI.pid); if (!p) return; const d = a.dataset.todoAdd;
+  let who = '';
+  if (UI.view === 'project') { const w = $('#add-who'); who = w ? w.value.trim() : ''; UI.addWho[p.id] = who; }
+  else who = UI.f.who;
+  (p.todos[d] = p.todos[d] || []).push({ id: newId(), text, done: false, who: who === p.owner ? '' : who });
+  Store.save(p); rerenderTodos();
   const ni = document.getElementById('todo-in-' + d); if (ni) ni.focus();
 });
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (UI.view === 'project') { const p = Store.get(UI.pid); if (p) { setHeadH(); renderGantt(p); } } }, 150); });
