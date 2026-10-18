@@ -251,6 +251,14 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .ghost{position:absolute;bottom:4px;height:4px;border-radius:2px;background:var(--faint);opacity:.6;z-index:1;pointer-events:none}
 .ghost-mile{position:absolute;top:15px;width:12px;height:12px;margin:-6px 0 0 -6px;transform:rotate(45deg);border:1.5px dashed var(--faint);border-radius:2px;z-index:1;pointer-events:none}
 .delay-tag{position:absolute;top:15px;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--bad);white-space:nowrap;z-index:2;pointer-events:none}
+.g-lbl .lk{flex:none;width:22px;height:22px;border:0;background:transparent;border-radius:5px;display:grid;place-items:center;padding:0;color:var(--faint);opacity:0}
+.g-row:hover .g-lbl .lk,.g-lbl .lk:focus-visible{opacity:.7}
+.g-lbl .lk.on{opacity:1;color:var(--warn)}
+.g-lbl .lk:hover{background:var(--accent-soft);opacity:1}
+@media (hover:none){.g-lbl .lk{opacity:.5}}
+.bar.locked,.mile.locked{cursor:not-allowed}
+.bar.locked{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 4px,transparent 4px 8px)}
+.bar.locked .h-l,.bar.locked .h-r{display:none}
 .g-lbl .dl{flex:none;font-size:11px;font-weight:700;color:var(--bad);background:var(--bad-soft);border-radius:4px;padding:0 5px;line-height:18px;white-space:nowrap}
 .g-bg .pend{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--bad);z-index:2}
 .g-bg .over{position:absolute;top:0;bottom:0;background:var(--bad-soft);opacity:.55}
@@ -358,6 +366,8 @@ const ICON = {
   edit: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   close: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  lock: '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  unlock: '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>',
   chev: '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M6 9l6 6 6-6"/></svg>',
   warn: '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>',
   down: '<svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
@@ -454,7 +464,7 @@ function normalize(p, id) {
     ph.id = ph.id || newId(); ph.name = ph.name || '階段'; ph.items = Array.isArray(ph.items) ? ph.items : [];
     ph.items.forEach(it => {
       it.id = it.id || newId(); it.kind = it.kind === 'milestone' ? 'milestone' : 'task';
-      it.deps = Array.isArray(it.deps) ? it.deps : []; it.done = !!it.done;
+      it.deps = Array.isArray(it.deps) ? it.deps : []; it.done = !!it.done; it.locked = !!it.locked;
       if (it.kind === 'milestone') { if (!isDate(it.date)) it.date = p.start; if (!isDate(it.bd)) it.bd = it.date; }
       else {
         if (!isDate(it.start)) it.start = p.start; if (!isDate(it.end) || it.end < it.start) it.end = it.start;
@@ -517,7 +527,7 @@ function setBaseline(it) {
    Returns Map(id -> net days moved; negative = earlier). */
 const baseStart = it => it.kind === 'milestone' ? it.bd : it.segs.reduce((m, x) => x.bs < m ? x.bs : m, it.segs[0].bs);
 function cascade(p, fromIds) {
-  const moved = new Map(); const queue = [...fromIds]; let guard = 0;
+  const moved = new Map(); moved.blocked = new Set(); const queue = [...fromIds]; let guard = 0;
   const items = allItems(p).map(x => x.it);
   while (queue.length && guard++ < 2000) {
     const id = queue.shift();
@@ -527,6 +537,7 @@ function cascade(p, fromIds) {
       it.deps.forEach(d => { const pr = findItem(p, d); if (!pr) return; const e = itEnd(pr.it); const r = it.kind === 'milestone' ? e : addDays(e, 1); if (!req || r > req) req = r; });
       if (!req) return;
       const cur = itStart(it);
+      if (it.locked) { if (cur < req) moved.blocked.add(it.id); return; }  // locked: never moved automatically
       const want = req > baseStart(it) ? req : baseStart(it);
       let n = 0;
       if (cur < req) n = daysBetween(cur, req);
@@ -538,13 +549,15 @@ function cascade(p, fromIds) {
 }
 function cascadeToast(p, moved) {
   const list = [...moved.entries()].filter(([, n]) => n);
-  if (!list.length) return;
+  const blocked = [...(moved.blocked || [])].map(id => findItem(p, id).it.name);
+  if (!list.length && !blocked.length) return;
   const later = list.filter(([, n]) => n > 0), earlier = list.filter(([, n]) => n < 0);
   const nm = arr => { const ns = arr.map(([id]) => findItem(p, id).it.name); return ns.slice(0, 3).join('、') + (ns.length > 3 ? ' 等' : ''); };
   const parts = [];
   if (later.length) parts.push(`延後 ${later.length} 個:${nm(later)}`);
   if (earlier.length) parts.push(`提前 ${earlier.length} 個:${nm(earlier)}`);
-  toast('後續任務已自動調整,' + parts.join(';'));
+  if (blocked.length) parts.push(`${blocked.slice(0, 3).join('、')} 已鎖定日期,沒有移動,請確認是否衝突`);
+  toast((list.length ? '後續任務已自動調整,' : '') + parts.join(';'));
 }
 function phaseSpan(ph) {
   if (!ph.items.length) return null;
@@ -785,13 +798,14 @@ function renderGantt(p) {
       ${it.kind === 'milestone' ? '<span class="dia" aria-hidden="true"></span>' : ''}
       <input type="checkbox" data-act="toggle-done" data-id="${it.id}" ${it.done ? 'checked' : ''} aria-label="完成 ${esc(it.name)}">
       <button class="nm" data-act="edit-item" data-id="${it.id}" title="${esc(it.name)}">${esc(it.name)}</button>
+      <button class="lk${it.locked ? ' on' : ''}" data-act="toggle-lock" data-id="${it.id}" aria-pressed="${it.locked}" aria-label="${it.locked ? '解除鎖定日期' : '鎖定日期'}" title="${it.locked ? '已鎖定日期,不會被自動調整。點一下解除' : '鎖定日期,不讓前置任務自動調整它'}">${it.locked ? ICON.lock : ICON.unlock}</button>
       ${dly > 0 && !it.done ? `<span class="dl" title="比預計晚 ${dly} 天完成">延 ${dly} 天</span>` : ''}
       ${bad ? `<span class="warn" title="前置任務尚未結束就開始">${ICON.warn}</span>` : ''}</div>`;
     let shape;
     if (it.kind === 'milestone') {
       const x = (toDn(it.date) - p0 + .5) * dw;
       const ghost = it.bd !== it.date ? `<div class="ghost-mile" style="left:${(toDn(it.bd) - p0 + .5) * dw}px" title="預計 ${md(it.bd)}"></div>` : '';
-      shape = ghost + `<div class="mile${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px" title="${esc(it.name)} ${md(it.date)}"></div><span class="mile-lbl" data-ml="${it.id}" style="left:${x + 13}px">${md(it.date)}${dly > 0 && !it.done ? ` <b style="color:var(--bad)">+${dly}天</b>` : ''}</span>`;
+      shape = ghost + `<div class="mile${it.locked ? ' locked' : ''}${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px" title="${esc(it.name)} ${md(it.date)}"></div><span class="mile-lbl" data-ml="${it.id}" style="left:${x + 13}px">${md(it.date)}${dly > 0 && !it.done ? ` <b style="color:var(--bad)">+${dly}天</b>` : ''}</span>`;
     } else {
       shape = it.segs.map((sg, si) => {
         const x = (toDn(sg.start) - p0) * dw, w = (toDn(sg.end) - toDn(sg.start) + 1) * dw;
@@ -801,7 +815,7 @@ function renderGantt(p) {
         const lateBg = !it.done && sg.end > sg.be ? `;background:linear-gradient(90deg,var(--bar) ${Math.max(0, cut)}px,var(--late) ${Math.max(0, cut)}px)` : '';
         const sd = daysBetween(sg.be, sg.end);
         const tip = `${sg.name ? sg.name + ' · ' : ''}${it.name}\n實際 ${md(sg.start)}–${md(sg.end)}\n預計 ${md(sg.bs)}–${md(sg.be)}${sd > 0 ? `(延 ${sd} 天)` : ''}`;
-        return ghost + `<div class="bar${sg.name ? ' named' : ''}${sg.name && w < 60 ? ' short' : ''}${it.done ? ' done' : ''}${bad && si === 0 ? ' conflict' : ''}" data-id="${it.id}" data-seg="${sg.id}" style="left:${x}px;width:${w}px${lateBg}" title="${esc(tip)}"><span class="h-l"></span><span class="bt">${sg.name ? esc(sg.name) : barText(sg, w)}</span><span class="h-r"></span></div>`;
+        return ghost + `<div class="bar${sg.name ? ' named' : ''}${sg.name && w < 60 ? ' short' : ''}${it.done ? ' done' : ''}${bad && si === 0 ? ' conflict' : ''}${it.locked ? ' locked' : ''}" data-id="${it.id}" data-seg="${sg.id}" style="left:${x}px;width:${w}px${lateBg}" title="${esc(tip)}"><span class="h-l"></span><span class="bt">${sg.name ? esc(sg.name) : barText(sg, w)}</span><span class="h-r"></span></div>`;
       }).join('');
     }
     return `<div class="g-row task${it.done ? ' is-done' : ''}" style="height:${rowH}px">${lbl}<div class="g-track" style="width:${tw}px">${shape}</div></div>`;
@@ -876,6 +890,7 @@ document.addEventListener('pointermove', e => {
   const dx = e.clientX - drag.x0;
   if (Math.abs(dx) > 3) drag.moved = true;
   if (!drag.moved) return;
+  if (drag.it.locked) { if (!drag.warned) { drag.warned = true; toast('這個任務已鎖定日期,要調整請先點名稱旁的鎖頭解除'); } return; }
   const d = Math.round(dx / G.dw);
   const { p, it, mode, s0, e0, el } = drag;
   const ps = toDn(p.start), pe = G.p0 + G.days - 1 + 30;
@@ -1033,6 +1048,7 @@ function openItemModal(p, itemId, newPhaseId) {
       <div class="field" id="if-datef"><label for="if-date">日期</label><input type="date" id="if-date" min="${p.start}" value="${it.date || it.end || defStart}"></div>
       ${isNew ? '' : `<div class="field"><span class="lb">預計日期${it.kind === 'milestone' ? ` · ${md(it.bd)}${delayDays(it) > 0 ? `(延 ${delayDays(it)} 天)` : ''}` : ''}</span><label class="check-line"><input type="checkbox" id="if-rebase">這次的日期修改是重新規劃,同時更新預計日期(不算延誤)</label></div>`}
       <label class="check-line"><input type="checkbox" id="if-done" ${it.done ? 'checked' : ''}>已完成</label>
+      <label class="check-line"><input type="checkbox" id="if-lock" ${it.locked ? 'checked' : ''}>鎖定日期(前置任務延後或提前時,這個任務不會自動移動)</label>
       <div class="field"><span class="lb">前置任務(這些完成後才開始)</span>${depList ? `<div class="deps">${depList}</div>` : '<span class="hint">專案裡還沒有其他項目。</span>'}</div>
       <div class="err" id="if-err"></div><div id="if-confirm"></div>
     </form>
@@ -1068,7 +1084,7 @@ function openItemModal(p, itemId, newPhaseId) {
       const name = $('#if-name').value.trim(); if (!name) { $('#if-err').textContent = '請填寫名稱'; return; }
       const inR = d => isDate(d) && d >= p.start;
       const rebase = !!($('#if-rebase') && $('#if-rebase').checked);
-      const rec = { name, kind, done: $('#if-done').checked, deps: [...document.querySelectorAll('input[name=dep]:checked')].map(x => x.value) };
+      const rec = { name, kind, done: $('#if-done').checked, locked: $('#if-lock').checked, deps: [...document.querySelectorAll('input[name=dep]:checked')].map(x => x.value) };
       if (kind === 'task') {
         readSegs();
         for (let i = 0; i < segs.length; i++) {
@@ -1186,6 +1202,18 @@ document.addEventListener('click', e => {
     }
     case 'check-del': p.checklist = p.checklist.filter(x => x.id !== a.dataset.id); Store.save(p); renderSide(p); break;
     case 'edit-phase': openPhaseModal(p, p.phases.find(x => x.id === a.dataset.id)); break;
+    case 'toggle-lock': {
+      const f = findItem(p, a.dataset.id); if (!f) break;
+      f.it.locked = !f.it.locked;
+      const b = $('#gantt'); const sl = b ? b.scrollLeft : 0;
+      let mv = null;
+      if (!f.it.locked) { mv = cascade(p, f.it.deps); }  // unlocking lets it follow its predecessors again
+      Store.save(p);
+      if (mv && [...mv.values()].some(n => n)) { renderProject(p); cascadeToast(p, mv); }
+      else { renderGantt(p); toast(f.it.locked ? `已鎖定「${f.it.name}」的日期` : `已解除鎖定「${f.it.name}」`); }
+      if ($('#gantt')) $('#gantt').scrollLeft = sl;
+      break;
+    }
     case 'toggle-phase': { const ph = p.phases.find(x => x.id === a.dataset.id); ph.collapsed = !ph.collapsed; Store.save(p); renderGantt(p); break; }
     case 'add-item': openItemModal(p, null, a.dataset.id); break;
     case 'edit-item': openItemModal(p, a.dataset.id); break;
