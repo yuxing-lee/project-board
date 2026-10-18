@@ -510,8 +510,12 @@ function setBaseline(it) {
   if (it.kind === 'milestone') it.bd = it.date;
   else it.segs.forEach(sg => { sg.bs = sg.start; sg.be = sg.end; });
 }
-/* Push every downstream task later so it starts after all its predecessors end.
-   Only moves things later, never earlier. Returns Map(id -> days moved). */
+/* Keep downstream tasks in step with their predecessors.
+   - Pushed later when a predecessor now ends on/after its start.
+   - Pulled back when a predecessor's delay shrinks, but never earlier than
+     the task's own planned start, so on-plan tasks stay where they are.
+   Returns Map(id -> net days moved; negative = earlier). */
+const baseStart = it => it.kind === 'milestone' ? it.bd : it.segs.reduce((m, x) => x.bs < m ? x.bs : m, it.segs[0].bs);
 function cascade(p, fromIds) {
   const moved = new Map(); const queue = [...fromIds]; let guard = 0;
   const items = allItems(p).map(x => x.it);
@@ -521,16 +525,26 @@ function cascade(p, fromIds) {
       if (!it.deps.includes(id)) return;
       let req = null;
       it.deps.forEach(d => { const pr = findItem(p, d); if (!pr) return; const e = itEnd(pr.it); const r = it.kind === 'milestone' ? e : addDays(e, 1); if (!req || r > req) req = r; });
+      if (!req) return;
       const cur = itStart(it);
-      if (req && cur < req) { const n = daysBetween(cur, req); shiftItem(it, n); moved.set(it.id, (moved.get(it.id) || 0) + n); queue.push(it.id); }
+      const want = req > baseStart(it) ? req : baseStart(it);
+      let n = 0;
+      if (cur < req) n = daysBetween(cur, req);
+      else if (cur > want) n = -daysBetween(want, cur);
+      if (n) { shiftItem(it, n); moved.set(it.id, (moved.get(it.id) || 0) + n); queue.push(it.id); }
     });
   }
   return moved;
 }
 function cascadeToast(p, moved) {
-  if (!moved.size) return;
-  const names = [...moved.keys()].map(id => findItem(p, id).it.name);
-  toast(`已自動延後 ${moved.size} 個後續任務:${names.slice(0, 3).join('、')}${names.length > 3 ? ' 等' : ''}`);
+  const list = [...moved.entries()].filter(([, n]) => n);
+  if (!list.length) return;
+  const later = list.filter(([, n]) => n > 0), earlier = list.filter(([, n]) => n < 0);
+  const nm = arr => { const ns = arr.map(([id]) => findItem(p, id).it.name); return ns.slice(0, 3).join('、') + (ns.length > 3 ? ' 等' : ''); };
+  const parts = [];
+  if (later.length) parts.push(`延後 ${later.length} 個:${nm(later)}`);
+  if (earlier.length) parts.push(`提前 ${earlier.length} 個:${nm(earlier)}`);
+  toast('後續任務已自動調整,' + parts.join(';'));
 }
 function phaseSpan(ph) {
   if (!ph.items.length) return null;
@@ -641,7 +655,7 @@ function renderProject(p) {
     <div class="p-content">
     <section id="todo-sec"></section>
     <section>
-      <div class="sec-head"><h2>甘特圖<span class="sub">拉長任務時,後續相依任務會自動延後;點任務可新增多段進度條</span></h2>
+      <div class="sec-head"><h2>甘特圖<span class="sub">任務延長或縮短時,後續相依任務會自動跟著調整;點任務可新增多段進度條</span></h2>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${dc ? `<span class="conf-note">${dc} 個任務延誤</span>` : ''}${cc ? `<span class="conf-note">${ICON.warn}${cc} 個相依衝突</span>` : ''}<button class="btn sm" data-act="set-baseline" title="把目前所有任務的日期記為預計日期">設為預計日期</button><button class="btn sm" data-act="add-phase">${ICON.plus}新增階段</button></div>
       </div>
       <div class="gantt-box"><div class="gantt" id="gantt"></div>
