@@ -13,7 +13,7 @@
   --line:#dde2ea; --line-strong:#c6cdd8;
   --accent:#2453c4; --accent-ink:#ffffff; --accent-soft:#e4ebfb;
   --bar:#4b74d8; --bar-ink:#ffffff; --bar-done:#b9c1ce; --phase:#2b3445; --mile:#d4861a;
-  --weekend:#edf0f5; --today:#e0453f;
+  --weekend:#edf0f5; --today:#e0453f; --late:#e5675f;
   --ok:#24935f; --ok-soft:#e1f3ea; --warn:#c77c12; --warn-soft:#fbf0dc; --bad:#d2403a; --bad-soft:#fbe5e3; --pause:#6f7888; --pause-soft:#eceef2;
   --shadow:0 1px 2px rgba(24,32,45,.06),0 4px 16px rgba(24,32,45,.06);
   --f-ui:"Nunito","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
@@ -25,7 +25,7 @@
   --line:#2b313d; --line-strong:#3a4250;
   --accent:#86a3f2; --accent-ink:#0f1420; --accent-soft:#222c44;
   --bar:#5d82e2; --bar-ink:#ffffff; --bar-done:#3d4452; --phase:#c8cfdb; --mile:#f0a63a;
-  --weekend:#1d2129; --today:#ff6a64;
+  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b;
   --ok:#4cc58a; --ok-soft:#183026; --warn:#f0a63a; --warn-soft:#33281a; --bad:#ff6a64; --bad-soft:#3a1f1f; --pause:#9aa3b2; --pause-soft:#262b34;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
   color-scheme:dark;
@@ -35,7 +35,7 @@
   --line:#2b313d; --line-strong:#3a4250;
   --accent:#86a3f2; --accent-ink:#0f1420; --accent-soft:#222c44;
   --bar:#5d82e2; --bar-ink:#ffffff; --bar-done:#3d4452; --phase:#c8cfdb; --mile:#f0a63a;
-  --weekend:#1d2129; --today:#ff6a64;
+  --weekend:#1d2129; --today:#ff6a64; --late:#d9615b;
   --ok:#4cc58a; --ok-soft:#183026; --warn:#f0a63a; --warn-soft:#33281a; --bad:#ff6a64; --bad-soft:#3a1f1f; --pause:#9aa3b2; --pause-soft:#262b34;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
   color-scheme:dark;
@@ -223,7 +223,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .g-lbl .add{opacity:.55}
 .g-row:hover .g-lbl .add{opacity:1}
 .g-track{position:relative;flex:none}
-.bar{position:absolute;top:7px;bottom:7px;border-radius:5px;background:var(--bar);color:var(--bar-ink);font-size:11px;font-family:var(--f-mono);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:grab;touch-action:none;user-select:none;z-index:2;box-shadow:0 0 0 1px var(--surface)}
+.bar{position:absolute;top:6px;bottom:12px;border-radius:5px;background:var(--bar);color:var(--bar-ink);font-size:11px;font-family:var(--f-mono);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:grab;touch-action:none;user-select:none;z-index:2;box-shadow:0 0 0 1px var(--surface)}
 .bar:active{cursor:grabbing}
 .bar.done{background:var(--bar-done);color:var(--ink)}
 .bar.conflict{box-shadow:0 0 0 2px var(--bad)}
@@ -240,14 +240,24 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .seg-row input:focus{border-color:var(--accent);outline:2px solid var(--accent-soft)}
 .seg-head{display:grid;grid-template-columns:minmax(0,1fr) 132px 132px 30px;gap:6px;font-size:11.5px;color:var(--faint)}
 @media (max-width:560px){.seg-row{grid-template-columns:1fr 1fr 30px}.seg-row .sn{grid-column:1/-1}.seg-head{display:none}}
-.phase-bar{position:absolute;top:13px;height:8px;background:var(--phase);border-radius:2px;z-index:2;pointer-events:none}
+.phase-bar{position:absolute;top:12px;height:8px;background:var(--phase);border-radius:2px;z-index:2;pointer-events:none}
 .phase-bar::before,.phase-bar::after{content:"";position:absolute;bottom:-5px;border:5px solid transparent;border-top-color:var(--phase)}
 .phase-bar::before{left:0;border-left-color:var(--phase)}
 .phase-bar::after{right:0;border-right-color:var(--phase)}
-.mile{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;transform:rotate(45deg);background:var(--mile);border-radius:2px;cursor:grab;touch-action:none;z-index:2;border:2px solid var(--surface)}
+.mile{position:absolute;top:15px;width:16px;height:16px;margin:-8px 0 0 -8px;transform:rotate(45deg);background:var(--mile);border-radius:2px;cursor:grab;touch-action:none;z-index:2;border:2px solid var(--surface)}
 .mile.done{background:var(--bar-done)}
 .mile.conflict{box-shadow:0 0 0 2px var(--bad)}
-.mile-lbl{position:absolute;top:50%;transform:translateY(-50%);font-size:11px;font-family:var(--f-mono);color:var(--muted);white-space:nowrap;pointer-events:none;z-index:2}
+.mile-lbl{position:absolute;top:15px;transform:translateY(-50%);font-size:11px;font-family:var(--f-mono);color:var(--muted);white-space:nowrap;pointer-events:none;z-index:2}
+.ghost{position:absolute;bottom:4px;height:4px;border-radius:2px;background:var(--faint);opacity:.6;z-index:1;pointer-events:none}
+.ghost-mile{position:absolute;top:15px;width:12px;height:12px;margin:-6px 0 0 -6px;transform:rotate(45deg);border:1.5px dashed var(--faint);border-radius:2px;z-index:1;pointer-events:none}
+.delay-tag{position:absolute;top:15px;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--bad);white-space:nowrap;z-index:2;pointer-events:none}
+.g-lbl .dl{flex:none;font-size:11px;font-weight:700;color:var(--bad);background:var(--bad-soft);border-radius:4px;padding:0 5px;line-height:18px;white-space:nowrap}
+.g-bg .pend{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--bad);z-index:2}
+.g-bg .over{position:absolute;top:0;bottom:0;background:var(--bad-soft);opacity:.55}
+.g-day.ov{color:var(--bad)}
+.late-note{color:var(--bad);font-weight:600}
+.seg-base{grid-column:1/-1;font-size:11.5px;color:var(--faint);margin:-2px 0 2px}
+.seg-base b{color:var(--bad);font-weight:700}
 svg.g-arrows{position:absolute;top:0;pointer-events:none;z-index:2;overflow:visible}
 .arr{fill:none;stroke:var(--faint);stroke-width:1.4}
 .arr.bad{stroke:var(--bad);stroke-width:1.8}
@@ -261,6 +271,8 @@ svg.g-arrows{position:absolute;top:0;pointer-events:none;z-index:2;overflow:visi
 .lg-dia{width:9px;height:9px;transform:rotate(45deg);background:var(--mile)}
 .lg-now{width:2px;height:12px;background:var(--today)}
 .lg-bad{width:22px;height:0;border-top:2px solid var(--bad)}
+.lg-ghost{width:22px;height:4px;border-radius:2px;background:var(--faint);opacity:.6}
+.lg-late{width:22px;height:9px;border-radius:3px;background:linear-gradient(90deg,var(--bar) 50%,var(--late) 50%)}
 .conf-note{color:var(--bad);font-weight:600;font-size:12.5px;display:inline-flex;align-items:center;gap:6px}
 
 /* modal */
@@ -443,13 +455,13 @@ function normalize(p, id) {
     ph.items.forEach(it => {
       it.id = it.id || newId(); it.kind = it.kind === 'milestone' ? 'milestone' : 'task';
       it.deps = Array.isArray(it.deps) ? it.deps : []; it.done = !!it.done;
-      if (it.kind === 'milestone') { if (!isDate(it.date)) it.date = p.start; }
+      if (it.kind === 'milestone') { if (!isDate(it.date)) it.date = p.start; if (!isDate(it.bd)) it.bd = it.date; }
       else {
         if (!isDate(it.start)) it.start = p.start; if (!isDate(it.end) || it.end < it.start) it.end = it.start;
         if (!Array.isArray(it.segs) || !it.segs.length) it.segs = [{ id: newId(), name: '', start: it.start, end: it.end }];
         it.segs = it.segs.filter(x => x && typeof x === 'object');
         if (!it.segs.length) it.segs = [{ id: newId(), name: '', start: it.start, end: it.end }];
-        it.segs.forEach(x => { x.id = x.id || newId(); x.name = typeof x.name === 'string' ? x.name : ''; if (!isDate(x.start)) x.start = it.start; if (!isDate(x.end) || x.end < x.start) x.end = x.start; });
+        it.segs.forEach(x => { x.id = x.id || newId(); x.name = typeof x.name === 'string' ? x.name : ''; if (!isDate(x.start)) x.start = it.start; if (!isDate(x.end) || x.end < x.start) x.end = x.start; if (!isDate(x.bs)) x.bs = x.start; if (!isDate(x.be) || x.be < x.bs) x.be = x.end; });
         syncTask(it);
       }
     });
@@ -485,6 +497,41 @@ function conflictPairs(p) {
   return out;
 }
 const conflictCount = p => conflictPairs(p).filter(c => c.bad).length;
+/* planned (baseline) end and delay in days; positive = late */
+const baseEnd = it => it.kind === 'milestone' ? it.bd : it.segs.reduce((m, x) => x.be > m ? x.be : m, it.segs[0].be);
+const delayDays = it => daysBetween(baseEnd(it), itEnd(it));
+const delayedCount = p => allItems(p).filter(({ it }) => !it.done && delayDays(it) > 0).length;
+const rangeEnd = p => allItems(p).reduce((m, { it }) => itEnd(it) > m ? itEnd(it) : m, p.end);
+function shiftItem(it, n) {
+  if (it.kind === 'milestone') it.date = addDays(it.date, n);
+  else { it.segs.forEach(sg => { sg.start = addDays(sg.start, n); sg.end = addDays(sg.end, n); }); syncTask(it); }
+}
+function setBaseline(it) {
+  if (it.kind === 'milestone') it.bd = it.date;
+  else it.segs.forEach(sg => { sg.bs = sg.start; sg.be = sg.end; });
+}
+/* Push every downstream task later so it starts after all its predecessors end.
+   Only moves things later, never earlier. Returns Map(id -> days moved). */
+function cascade(p, fromIds) {
+  const moved = new Map(); const queue = [...fromIds]; let guard = 0;
+  const items = allItems(p).map(x => x.it);
+  while (queue.length && guard++ < 2000) {
+    const id = queue.shift();
+    items.forEach(it => {
+      if (!it.deps.includes(id)) return;
+      let req = null;
+      it.deps.forEach(d => { const pr = findItem(p, d); if (!pr) return; const e = itEnd(pr.it); const r = it.kind === 'milestone' ? e : addDays(e, 1); if (!req || r > req) req = r; });
+      const cur = itStart(it);
+      if (req && cur < req) { const n = daysBetween(cur, req); shiftItem(it, n); moved.set(it.id, (moved.get(it.id) || 0) + n); queue.push(it.id); }
+    });
+  }
+  return moved;
+}
+function cascadeToast(p, moved) {
+  if (!moved.size) return;
+  const names = [...moved.keys()].map(id => findItem(p, id).it.name);
+  toast(`已自動延後 ${moved.size} 個後續任務:${names.slice(0, 3).join('、')}${names.length > 3 ? ' 等' : ''}`);
+}
 function phaseSpan(ph) {
   if (!ph.items.length) return null;
   let s = null, e = null;
@@ -547,12 +594,12 @@ function renderHome() {
     else when = `第 ${daysBetween(p.start, t) + 1} 天 · 剩 ${daysBetween(t, p.end)} 天`;
     const pos = clamp((daysBetween(p.start, t) + .5) / total, 0, 1);
     const inRange = t >= p.start && t <= p.end;
-    const cc = conflictCount(p);
+    const cc = conflictCount(p), dc = delayedCount(p), over = daysBetween(p.end, rangeEnd(p));
     return `<button class="card" data-act="open" data-id="${p.id}">
       <div class="card-top"><div style="min-width:0"><div class="client">${esc(p.client) || '未填客戶'}</div><h2>${esc(p.name)}</h2></div><span class="pill st-${p.status}">${STATUS[p.status]}</span></div>
       <div class="meta"><span class="num">${ymd(p.start)} – ${md(p.end)}</span><span>${total} 天</span>${p.owner ? `<span>負責人 ${esc(p.owner)}</span>` : ''}</div>
       <div class="timeline-mini" aria-hidden="true"><div class="elapsed" style="width:${(t < p.start ? 0 : t > p.end ? 1 : pos) * 100}%"></div>${inRange ? `<div class="now" style="left:calc(${pos * 100}% - 1px)"></div>` : ''}</div>
-      <div class="card-foot"><span>${when}</span>${cc ? `<span class="warn-chip">${cc} 個相依衝突</span>` : ''}</div>
+      <div class="card-foot"><span>${when}</span><span style="display:flex;gap:10px">${dc ? `<span class="warn-chip">${dc} 個任務延誤</span>` : ''}${over > 0 ? `<span class="warn-chip">超出結案日 ${over} 天</span>` : ''}${cc ? `<span class="warn-chip">${cc} 個相依衝突</span>` : ''}</span></div>
     </button>`;
   }).join('');
   $('#app').innerHTML = `
@@ -576,13 +623,13 @@ function renderHome() {
 function renderProject(p) {
   if (rollover(p)) Store.save(p);
   const total = daysBetween(p.start, p.end) + 1;
-  const cc = conflictCount(p);
+  const cc = conflictCount(p), dc = delayedCount(p), over = daysBetween(p.end, rangeEnd(p));
   $('#app').innerHTML = `
   <header class="p-head"><div class="wrap">
     <button class="icon-btn" data-act="home" aria-label="返回專案目錄" title="返回專案目錄">${ICON.back}</button>
     <div class="p-title">
       <div class="line1"><span class="cl">${esc(p.client) || '未填客戶'}</span><span class="sep">|</span><h1>${esc(p.name)}</h1></div>
-      <div class="p-meta"><span><span class="k">負責人</span>${esc(p.owner) || '—'}</span><span class="num"><span class="k">期間</span>${ymd(p.start)} – ${ymd(p.end)}</span><span><span class="k">共</span>${total} 天</span></div>
+      <div class="p-meta"><span><span class="k">負責人</span>${esc(p.owner) || '—'}</span><span class="num"><span class="k">期間</span>${ymd(p.start)} – ${ymd(p.end)}</span><span><span class="k">共</span>${total} 天</span>${over > 0 ? `<span class="late-note">目前排程到 ${md(rangeEnd(p))},超出結案日 ${over} 天</span>` : ''}</div>
     </div>
     <div class="p-right">
       <select id="status-sel" class="status-select st-${p.status}" aria-label="專案狀態">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}"${k === p.status ? ' selected' : ''}>${v}</option>`).join('')}</select>
@@ -594,11 +641,11 @@ function renderProject(p) {
     <div class="p-content">
     <section id="todo-sec"></section>
     <section>
-      <div class="sec-head"><h2>甘特圖<span class="sub">拖曳長條改日期,拉兩端調整工期;點任務可新增多段進度條</span></h2>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${cc ? `<span class="conf-note">${ICON.warn}${cc} 個相依衝突</span>` : ''}<button class="btn sm" data-act="add-phase">${ICON.plus}新增階段</button></div>
+      <div class="sec-head"><h2>甘特圖<span class="sub">拉長任務時,後續相依任務會自動延後;點任務可新增多段進度條</span></h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${dc ? `<span class="conf-note">${dc} 個任務延誤</span>` : ''}${cc ? `<span class="conf-note">${ICON.warn}${cc} 個相依衝突</span>` : ''}<button class="btn sm" data-act="set-baseline" title="把目前所有任務的日期記為預計日期">設為預計日期</button><button class="btn sm" data-act="add-phase">${ICON.plus}新增階段</button></div>
       </div>
       <div class="gantt-box"><div class="gantt" id="gantt"></div>
-        <div class="g-legend"><span><i class="lg-bar"></i>任務</span><span><i class="lg-done"></i>已完成</span><span><i class="lg-dia"></i>里程碑</span><span><i class="lg-now"></i>今天</span><span><i class="lg-bad"></i>相依衝突:後續任務排在前置任務結束之前</span></div>
+        <div class="g-legend"><span><i class="lg-bar"></i>任務</span><span><i class="lg-done"></i>已完成</span><span><i class="lg-dia"></i>里程碑</span><span><i class="lg-now"></i>今天</span><span><i class="lg-ghost"></i>預計日期</span><span><i class="lg-late"></i>超過預計的天數</span><span><i class="lg-bad"></i>相依衝突</span></div>
       </div>
     </section>
     <div class="footnote">${saveStateHtml()}</div>
@@ -677,7 +724,8 @@ function renderTodos(p) {
 function renderGantt(p) {
   const box = $('#gantt'); if (!box) return;
   const W = box.clientWidth;
-  const days = daysBetween(p.start, p.end) + 1;
+  const rEnd = rangeEnd(p);
+  const days = daysBetween(p.start, rEnd) + 1;
   const labelW = W < 640 ? 150 : 240;
   const dw = Math.max(26, (W - labelW - 1) / days);
   const rowH = 36;
@@ -693,7 +741,7 @@ function renderGantt(p) {
     const d = fromDn(p0 + i); const m = d.slice(0, 7);
     if (m !== cur) { flushMonth(); cur = m; cnt = 0; } cnt++;
     const w = dow(d);
-    dayCells += `<div class="g-day${(w === 0 || w === 6) ? ' we' : ''}${d === t ? ' td' : ''}" style="width:${dw}px"><span>${+d.slice(8)}</span><span class="w">${WD[w]}</span></div>`;
+    dayCells += `<div class="g-day${(w === 0 || w === 6) ? ' we' : ''}${d === t ? ' td' : ''}${d > p.end ? ' ov' : ''}" style="width:${dw}px"><span>${+d.slice(8)}</span><span class="w">${WD[w]}</span></div>`;
   }
   flushMonth();
 
@@ -718,21 +766,28 @@ function renderGantt(p) {
           <button class="icon-btn add" data-act="add-item" data-id="${r.ph.id}" aria-label="在此階段新增任務" title="新增任務或里程碑">${ICON.plus}</button>
         </div><div class="g-track" style="width:${tw}px">${bar}</div></div>`;
     }
-    const it = r.it; const bad = badTo.has(it.id);
+    const it = r.it; const bad = badTo.has(it.id); const dly = delayDays(it);
     const lbl = `<div class="g-lbl" style="width:${labelW}px">
       ${it.kind === 'milestone' ? '<span class="dia" aria-hidden="true"></span>' : ''}
       <input type="checkbox" data-act="toggle-done" data-id="${it.id}" ${it.done ? 'checked' : ''} aria-label="完成 ${esc(it.name)}">
       <button class="nm" data-act="edit-item" data-id="${it.id}" title="${esc(it.name)}">${esc(it.name)}</button>
+      ${dly > 0 && !it.done ? `<span class="dl" title="比預計晚 ${dly} 天完成">延 ${dly} 天</span>` : ''}
       ${bad ? `<span class="warn" title="前置任務尚未結束就開始">${ICON.warn}</span>` : ''}</div>`;
     let shape;
     if (it.kind === 'milestone') {
       const x = (toDn(it.date) - p0 + .5) * dw;
-      shape = `<div class="mile${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px" title="${esc(it.name)} ${md(it.date)}"></div><span class="mile-lbl" data-ml="${it.id}" style="left:${x + 13}px">${md(it.date)}</span>`;
+      const ghost = it.bd !== it.date ? `<div class="ghost-mile" style="left:${(toDn(it.bd) - p0 + .5) * dw}px" title="預計 ${md(it.bd)}"></div>` : '';
+      shape = ghost + `<div class="mile${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px" title="${esc(it.name)} ${md(it.date)}"></div><span class="mile-lbl" data-ml="${it.id}" style="left:${x + 13}px">${md(it.date)}${dly > 0 && !it.done ? ` <b style="color:var(--bad)">+${dly}天</b>` : ''}</span>`;
     } else {
       shape = it.segs.map((sg, si) => {
         const x = (toDn(sg.start) - p0) * dw, w = (toDn(sg.end) - toDn(sg.start) + 1) * dw;
-        const tip = `${sg.name ? sg.name + ' · ' : ''}${it.name} ${md(sg.start)}–${md(sg.end)}`;
-        return `<div class="bar${sg.name ? ' named' : ''}${sg.name && w < 60 ? ' short' : ''}${it.done ? ' done' : ''}${bad && si === 0 ? ' conflict' : ''}" data-id="${it.id}" data-seg="${sg.id}" style="left:${x}px;width:${w}px" title="${esc(tip)}"><span class="h-l"></span><span class="bt">${sg.name ? esc(sg.name) : barText(sg, w)}</span><span class="h-r"></span></div>`;
+        const moved = sg.bs !== sg.start || sg.be !== sg.end;
+        const ghost = moved ? `<div class="ghost" style="left:${(toDn(sg.bs) - p0) * dw}px;width:${(toDn(sg.be) - toDn(sg.bs) + 1) * dw}px"></div>` : '';
+        const cut = (toDn(sg.be) - toDn(sg.start) + 1) * dw;
+        const lateBg = !it.done && sg.end > sg.be ? `;background:linear-gradient(90deg,var(--bar) ${Math.max(0, cut)}px,var(--late) ${Math.max(0, cut)}px)` : '';
+        const sd = daysBetween(sg.be, sg.end);
+        const tip = `${sg.name ? sg.name + ' · ' : ''}${it.name}\n實際 ${md(sg.start)}–${md(sg.end)}\n預計 ${md(sg.bs)}–${md(sg.be)}${sd > 0 ? `(延 ${sd} 天)` : ''}`;
+        return ghost + `<div class="bar${sg.name ? ' named' : ''}${sg.name && w < 60 ? ' short' : ''}${it.done ? ' done' : ''}${bad && si === 0 ? ' conflict' : ''}" data-id="${it.id}" data-seg="${sg.id}" style="left:${x}px;width:${w}px${lateBg}" title="${esc(tip)}"><span class="h-l"></span><span class="bt">${sg.name ? esc(sg.name) : barText(sg, w)}</span><span class="h-r"></span></div>`;
       }).join('');
     }
     return `<div class="g-row task${it.done ? ' is-done' : ''}" style="height:${rowH}px">${lbl}<div class="g-track" style="width:${tw}px">${shape}</div></div>`;
@@ -745,7 +800,8 @@ function renderGantt(p) {
     if (w === 0 || w === 6) bg += `<div class="we" style="left:${i * dw}px;width:${dw}px"></div>`;
     if (i && w === 1) bg += `<div class="vl" style="left:${i * dw}px"></div>`;
   }
-  if (t >= p.start && t <= p.end) bg += `<div class="now" style="left:${(toDn(t) - p0 + .5) * dw - 1}px" title="今天"></div>`;
+  if (rEnd > p.end) { const xe = (toDn(p.end) - p0 + 1) * dw; bg += `<div class="over" style="left:${xe}px;width:${tw - xe}px"></div><div class="pend" style="left:${xe - 1}px" title="結案日 ${md(p.end)}"></div>`; }
+  if (t >= p.start && t <= rEnd) bg += `<div class="now" style="left:${(toDn(t) - p0 + .5) * dw - 1}px" title="今天"></div>`;
 
   const H = rows.length * rowH;
   box.innerHTML = `<div class="g-inner" style="width:${labelW + tw}px">
@@ -760,7 +816,7 @@ function renderGantt(p) {
   </div>`;
   drawArrows(p);
   // keep today in view on narrow screens
-  if (box.scrollWidth > box.clientWidth && t >= p.start && t <= p.end && !G.scrolled) {
+  if (box.scrollWidth > box.clientWidth && t >= p.start && t <= rEnd && !G.scrolled) {
     box.scrollLeft = Math.max(0, (toDn(t) - p0) * dw - (W - labelW) / 3); G.scrolled = true;
   }
 }
@@ -778,7 +834,7 @@ function drawArrows(p) {
     if (a.id === b.id) return;
     const x1 = a.kind === 'milestone' ? (toDn(a.date) - p0 + .5) * dw + 9 : (toDn(a.end) - p0 + 1) * dw;
     const x2 = b.kind === 'milestone' ? (toDn(b.date) - p0 + .5) * dw - 10 : (toDn(b.start) - p0) * dw - 1;
-    const y1 = ri * rowH + rowH / 2, y2 = rj * rowH + rowH / 2;
+    const y1 = ri * rowH + 15, y2 = rj * rowH + 15;
     let d;
     if (x2 - 8 >= x1 + 6) { const xm = x1 + 6; d = `M${x1} ${y1}H${xm}V${y2}H${x2}`; }
     else { const ym = y2 > y1 ? rj * rowH : (rj + 1) * rowH; d = `M${x1} ${y1}H${x1 + 8}V${ym}H${x2 - 10}V${y2}H${x2}`; }
@@ -808,7 +864,7 @@ document.addEventListener('pointermove', e => {
   if (!drag.moved) return;
   const d = Math.round(dx / G.dw);
   const { p, it, mode, s0, e0, el } = drag;
-  const ps = toDn(p.start), pe = toDn(p.end);
+  const ps = toDn(p.start), pe = G.p0 + G.days - 1 + 30;
   if (it.kind === 'milestone') {
     it.date = fromDn(clamp(s0 + d, ps, pe));
     const x = (toDn(it.date) - G.p0 + .5) * G.dw;
@@ -833,7 +889,7 @@ const endDrag = e => {
   if (d.moved) {
     const cs = d.sg ? d.sg.start : itStart(d.it), ce = d.sg ? d.sg.end : itEnd(d.it);
     const changed = toDn(cs) !== d.s0 || toDn(ce) !== d.e0;
-    if (changed) { Store.save(d.p); renderProject(d.p); restoreScroll(); }
+    if (changed) { const mv = cascade(d.p, [d.it.id]); Store.save(d.p); renderProject(d.p); restoreScroll(); cascadeToast(d.p, mv); }
   } else openItemModal(d.p, d.it.id);
 };
 let ganttScroll = 0;
@@ -890,8 +946,8 @@ function openProjectModal(p) {
         Object.assign(p, { client: $('#pf-client').value.trim(), name, owner: $('#pf-owner').value.trim(), start: s, end: en, status: $('#pf-status').value });
         // keep items inside the new range
         allItems(p).forEach(({ it }) => {
-          if (it.kind === 'milestone') it.date = fromDn(clamp(toDn(it.date), toDn(s), toDn(en)));
-          else { it.segs.forEach(sg => { sg.start = fromDn(clamp(toDn(sg.start), toDn(s), toDn(en))); sg.end = fromDn(clamp(toDn(sg.end), toDn(sg.start), toDn(en))); }); syncTask(it); }
+          if (it.kind === 'milestone') { if (it.date < s) it.date = s; }
+          else { it.segs.forEach(sg => { if (sg.start < s) sg.start = s; if (sg.end < sg.start) sg.end = sg.start; }); syncTask(it); }
         });
         Store.save(p); closeModal(); renderProject(p); toast('已儲存');
       }
@@ -960,7 +1016,8 @@ function openItemModal(p, itemId, newPhaseId) {
         <div class="segs" id="if-segs"></div>
         <div><button type="button" class="btn sm" id="if-addseg">${ICON.plus}新增進度條</button></div>
       </div>
-      <div class="field" id="if-datef"><label for="if-date">日期</label><input type="date" id="if-date" min="${p.start}" max="${p.end}" value="${it.date || it.end || defStart}"></div>
+      <div class="field" id="if-datef"><label for="if-date">日期</label><input type="date" id="if-date" min="${p.start}" value="${it.date || it.end || defStart}"></div>
+      ${isNew ? '' : `<div class="field"><span class="lb">預計日期${it.kind === 'milestone' ? ` · ${md(it.bd)}${delayDays(it) > 0 ? `(延 ${delayDays(it)} 天)` : ''}` : ''}</span><label class="check-line"><input type="checkbox" id="if-rebase">這次的日期修改是重新規劃,同時更新預計日期(不算延誤)</label></div>`}
       <label class="check-line"><input type="checkbox" id="if-done" ${it.done ? 'checked' : ''}>已完成</label>
       <div class="field"><span class="lb">前置任務(這些完成後才開始)</span>${depList ? `<div class="deps">${depList}</div>` : '<span class="hint">專案裡還沒有其他項目。</span>'}</div>
       <div class="err" id="if-err"></div><div id="if-confirm"></div>
@@ -972,16 +1029,17 @@ function openItemModal(p, itemId, newPhaseId) {
     const drawSegs = () => {
       $('#if-segs').innerHTML = segs.map((sg, i) => `<div class="seg-row">
         <input type="text" class="sn" id="seg-n-${sg.id}" value="${esc(sg.name)}" placeholder="${segs.length > 1 ? '例如:第 ' + (i + 1) + ' 批' : '可留空'}" aria-label="子任務名稱">
-        <input type="date" class="ss" id="seg-s-${sg.id}" min="${p.start}" max="${p.end}" value="${sg.start}" aria-label="開始日">
-        <input type="date" class="se" id="seg-e-${sg.id}" min="${p.start}" max="${p.end}" value="${sg.end}" aria-label="結束日">
-        <button type="button" class="icon-btn" data-segdel="${i}" aria-label="刪除這段進度條" ${segs.length < 2 ? 'disabled style="opacity:.3;cursor:default"' : ''}>${ICON.x}</button></div>`).join('');
+        <input type="date" class="ss" id="seg-s-${sg.id}" min="${p.start}" value="${sg.start}" aria-label="開始日">
+        <input type="date" class="se" id="seg-e-${sg.id}" min="${p.start}" value="${sg.end}" aria-label="結束日">
+        <button type="button" class="icon-btn" data-segdel="${i}" aria-label="刪除這段進度條" ${segs.length < 2 ? 'disabled style="opacity:.3;cursor:default"' : ''}>${ICON.x}</button>
+        ${sg.bs ? `<div class="seg-base">預計 ${md(sg.bs)} – ${md(sg.be)}${sg.end > sg.be ? ` · <b>延 ${daysBetween(sg.be, sg.end)} 天</b>` : ''}</div>` : ''}</div>`).join('');
     };
     drawSegs();
     $('#if-addseg').addEventListener('click', () => {
       readSegs();
       const last = segs.reduce((m, x) => isDate(x.end) && x.end > m ? x.end : m, p.start);
-      const ns = last < p.end ? addDays(last, 1) : p.end;
-      segs.push({ id: newId(), name: '', start: ns, end: fromDn(Math.min(toDn(ns) + 2, toDn(p.end))) });
+      const ns = addDays(last, 1);
+      segs.push({ id: newId(), name: '', start: ns, end: addDays(ns, 2) });
       drawSegs(); const n = document.getElementById('seg-n-' + segs[segs.length - 1].id); if (n) n.focus();
     });
     $('#if-segs').addEventListener('click', e => {
@@ -994,29 +1052,35 @@ function openItemModal(p, itemId, newPhaseId) {
     $('#iform').addEventListener('submit', e => {
       e.preventDefault();
       const name = $('#if-name').value.trim(); if (!name) { $('#if-err').textContent = '請填寫名稱'; return; }
-      const inR = d => isDate(d) && d >= p.start && d <= p.end;
+      const inR = d => isDate(d) && d >= p.start;
+      const rebase = !!($('#if-rebase') && $('#if-rebase').checked);
       const rec = { name, kind, done: $('#if-done').checked, deps: [...document.querySelectorAll('input[name=dep]:checked')].map(x => x.value) };
       if (kind === 'task') {
         readSegs();
         for (let i = 0; i < segs.length; i++) {
           const sg = segs[i], lbl = segs.length > 1 ? `第 ${i + 1} 段進度條` : '進度條';
-          if (!inR(sg.start) || !inR(sg.end)) { $('#if-err').textContent = `${lbl}的日期需在專案期間內(${md(p.start)}–${md(p.end)})`; return; }
+          if (!inR(sg.start) || !inR(sg.end)) { $('#if-err').textContent = `${lbl}的日期不能早於專案開始日 ${md(p.start)}`; return; }
           if (sg.end < sg.start) { $('#if-err').textContent = `${lbl}的結束日不能早於開始日`; return; }
         }
-        rec.segs = segs.map(x => ({ id: x.id, name: half(x.name), start: x.start, end: x.end }));
+        rec.segs = segs.map(x => ({ id: x.id, name: half(x.name), start: x.start, end: x.end, bs: rebase || !x.bs ? x.start : x.bs, be: rebase || !x.be ? x.end : x.be }));
         const tmp = { kind: 'task', segs: rec.segs }; syncTask(tmp);
         rec.segs = tmp.segs; rec.start = tmp.start; rec.end = tmp.end; rec.date = undefined;
       } else {
-        const d = $('#if-date').value; if (!inR(d)) { $('#if-err').textContent = `日期需在專案期間內(${md(p.start)}–${md(p.end)})`; return; }
-        rec.date = d; rec.start = undefined; rec.end = undefined; rec.segs = undefined;
+        const d = $('#if-date').value; if (!inR(d)) { $('#if-err').textContent = `日期不能早於專案開始日 ${md(p.start)}`; return; }
+        rec.date = d; rec.bd = (rebase || it.kind !== 'milestone' || !it.bd) ? d : it.bd; rec.start = undefined; rec.end = undefined; rec.segs = undefined;
       }
       const target = p.phases.find(x => x.id === $('#if-phase').value);
-      if (isNew) { target.items.push(Object.assign({ id: newId() }, clean(rec))); }
+      let savedId;
+      if (isNew) { savedId = newId(); target.items.push(Object.assign({ id: savedId }, clean(rec))); }
       else {
+        savedId = it.id;
         Object.keys(rec).forEach(k => { if (rec[k] === undefined) delete it[k]; else it[k] = rec[k]; });
+        if (it.kind === 'task') delete it.bd;
         if (target !== f.ph) { f.ph.items = f.ph.items.filter(x => x !== it); target.items.push(it); }
       }
-      Store.save(p); closeModal(); renderProject(p);
+      const mv = cascade(p, [savedId]);
+      if (rebase) mv.forEach((_, id) => setBaseline(findItem(p, id).it));
+      Store.save(p); closeModal(); renderProject(p); cascadeToast(p, mv);
     });
     const del = $('#if-del');
     if (del) del.addEventListener('click', () => {
@@ -1027,6 +1091,13 @@ function openItemModal(p, itemId, newPhaseId) {
         Store.save(p); closeModal(); renderProject(p);
       });
     });
+  });
+}
+function openBaselineModal(p) {
+  const n = allItems(p).length;
+  openModal(`${mHead('設為預計日期')}<div class="modal-b"><p style="margin:0;line-height:1.7">把目前 <b class="num">${n}</b> 個任務和里程碑的日期記為「預計日期」。之後任務被拉長或延後,甘特圖會用灰線標出原本的預計日期,並顯示延誤天數。</p><p class="hint" style="margin:0">適合在排好計畫、正式開工前按一次。已經顯示的延誤紀錄會清除。</p></div>
+    <div class="modal-f"><div class="r"><button class="btn" data-act="close-modal">取消</button><button class="btn primary" id="bl-go">設為預計日期</button></div></div>`, () => {
+    $('#bl-go').addEventListener('click', () => { allItems(p).forEach(({ it }) => setBaseline(it)); Store.save(p); closeModal(); renderProject(p); toast('已將目前日期設為預計日期'); });
   });
 }
 const clean = o => { const r = {}; Object.keys(o).forEach(k => { if (o[k] !== undefined) r[k] = o[k]; }); return r; };
@@ -1092,6 +1163,7 @@ document.addEventListener('click', e => {
     case 'week': { const d = +a.dataset.d; UI.weekOffset = d === 0 ? 0 : UI.weekOffset + d; renderTodos(p); break; }
     case 'todo-del': { const d = a.dataset.d; p.todos[d] = (p.todos[d] || []).filter(x => x.id !== a.dataset.id); if (!p.todos[d].length) delete p.todos[d]; Store.save(p); renderTodos(p); break; }
     case 'add-phase': openPhaseModal(p, null); break;
+    case 'set-baseline': openBaselineModal(p); break;
     case 'side-toggle': {
       const closed = !sideClosed(); setSideClosed(closed);
       $('#p-layout').classList.toggle('side-closed', closed); renderSide(p);
