@@ -1,22 +1,15 @@
--- 專案進度看板:不用登入的共用資料表
--- 打開網址的人都能讀取和修改同一份資料。
+-- 專案進度看板:把原本的 projects 表改成不用登入、大家共用
+alter table public.projects drop constraint if exists projects_pkey;
+alter table public.projects drop constraint if exists projects_user_id_fkey;
+alter table public.projects alter column user_id drop not null;
+alter table public.projects alter column user_id drop default;
+alter table public.projects add primary key (id);
 
-create table if not exists public.shared_projects (
-  id         text        primary key,
-  data       jsonb       not null,
-  updated_at timestamptz not null default now()
-);
+drop policy if exists "projects_select_own" on public.projects;
+drop policy if exists "projects_insert_own" on public.projects;
+drop policy if exists "projects_update_own" on public.projects;
+drop policy if exists "projects_delete_own" on public.projects;
+drop policy if exists "projects_open" on public.projects;
+create policy "projects_open" on public.projects for all to anon, authenticated using (true) with check (true);
 
-alter table public.shared_projects enable row level security;
-
-drop policy if exists "shared_read"   on public.shared_projects;
-drop policy if exists "shared_insert" on public.shared_projects;
-drop policy if exists "shared_update" on public.shared_projects;
-drop policy if exists "shared_delete" on public.shared_projects;
-
-create policy "shared_read"   on public.shared_projects for select to anon, authenticated using (true);
-create policy "shared_insert" on public.shared_projects for insert to anon, authenticated with check (true);
-create policy "shared_update" on public.shared_projects for update to anon, authenticated using (true) with check (true);
-create policy "shared_delete" on public.shared_projects for delete to anon, authenticated using (true);
-
-grant select, insert, update, delete on public.shared_projects to anon, authenticated;
+grant select, insert, update, delete on public.projects to anon, authenticated;

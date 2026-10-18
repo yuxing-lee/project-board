@@ -406,7 +406,7 @@ const ICON = {
 const LS_KEY = 'project-gantt-v1';
 /* Cloud sync for the stand-alone (Vercel) build. Empty values = this browser only. */
 const SB = { url: "https://ulhcyjtvupwgynhgmglw.supabase.co", key: "sb_publishable_ZIN9FEpzD6yHUeq47k-1KA_8XWIIrrM", open: true };  // open: shared board, no sign-in
-const TBL = () => SB.open ? 'shared_projects' : 'projects';
+const TBL = () => 'projects';
 const LOGIN_EMAIL = "zhang200221@gmail.com";
 const Store = {
   mode: 'local', db: null, uid: null, sb: null, user: null, needLogin: false, initError: '', projects: {}, timers: {}, chains: {}, pending: 0, failed: false,
@@ -1476,7 +1476,7 @@ function renderLogin() {
 function renderInitError() {
   $('#app').innerHTML = `<main class="wrap" style="padding-block:64px"><div class="card" style="max-width:520px;margin:0 auto;cursor:default">
     <h2 style="margin:0">讀不到雲端資料</h2>
-    <p class="hint" style="margin:0;line-height:1.7">請確認 Supabase 已建立 ${SB.open ? 'shared_projects' : 'projects'} 資料表,並檢查網路連線後重新整理頁面。</p>
+    <p class="hint" style="margin:0;line-height:1.7">請確認 Supabase 的 projects 資料表已開放存取,並檢查網路連線後重新整理頁面。</p>
     <p class="mono" style="margin:0;font-size:12px;color:var(--bad);overflow-wrap:anywhere">${esc(Store.initError)}</p>
     ${SB.open ? '' : '<div><button class="btn" data-act="logout">登出</button></div>'}</div></main>`;
 }
