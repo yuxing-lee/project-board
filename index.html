@@ -1434,6 +1434,16 @@ let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTime
 window.addEventListener('hashchange', () => { G.scrolled = false; route(); });
 
 /* ---------- cloud sign-in ---------- */
+/* a magic link that failed comes back as #error=...&error_description=... */
+let LOGIN_ERR = '';
+try {
+  const h = new URLSearchParams((location.hash || '').slice(1) || location.search.slice(1));
+  const code = h.get('error_code') || h.get('error');
+  if (code) {
+    LOGIN_ERR = code === 'otp_expired' ? '這個登入連結已失效或已被使用過,請再寄一次新的連結。' : '登入失敗:' + (h.get('error_description') || code).replace(/\+/g, ' ');
+    history.replaceState(null, '', location.pathname);
+  }
+} catch (_) {}
 function renderLogin() {
   closeModal();
   $('#app').innerHTML = `
@@ -1445,7 +1455,7 @@ function renderLogin() {
         <label for="login-email">Email</label>
         <input type="text" id="login-email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(LOGIN_EMAIL)}">
         <button class="btn primary" type="submit" style="margin-top:6px;justify-content:center">寄送登入連結</button>
-        <div class="err" id="login-msg" role="status"></div>
+        <div class="err" id="login-msg" role="status">${esc(LOGIN_ERR)}</div>
       </form>
     </div>
   </main>`;
