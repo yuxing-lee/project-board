@@ -688,6 +688,11 @@ function renderHome() {
 
 /* ---------- project ---------- */
 function renderProject(p) {
+  // re-rendering the same project (after an edit) keeps the page and Gantt scroll where they were
+  const oldBox = $('#gantt');
+  const same = UI.view === 'project' && G.pid === p.id && !!oldBox;
+  const keepY = same ? window.scrollY : null;
+  G.keepSL = same ? oldBox.scrollLeft : null;
   if (rollover(p)) Store.save(p);
   const total = daysBetween(p.start, p.end) + 1;
   const cc = conflictCount(p), dc = delayedCount(p), over = daysBetween(p.end, rangeEnd(p));
@@ -724,6 +729,7 @@ function renderProject(p) {
   renderSide(p);
   renderTodos(p);
   renderGantt(p);
+  if (keepY !== null) { window.scrollTo(0, keepY); requestAnimationFrame(() => window.scrollTo(0, keepY)); }
 }
 function setHeadH() { const h = $('.p-head'); if (h) document.documentElement.style.setProperty('--head-h', h.offsetHeight + 'px'); }
 const SIDE_KEY = 'project-gantt-side-closed';
@@ -865,6 +871,7 @@ function openTodoModal(p, d, id) {
 /* ---------- gantt ---------- */
 function renderGantt(p) {
   const box = $('#gantt'); if (!box) return;
+  const keepSL = G.keepSL != null ? G.keepSL : (G.pid === p.id ? box.scrollLeft : null); G.keepSL = null;
   const W = box.clientWidth;
   const rEnd = rangeEnd(p);
   const days = daysBetween(p.start, rEnd) + 1;
@@ -958,7 +965,8 @@ function renderGantt(p) {
     ${p.phases.length ? '' : `<div class="g-addrow"><div class="g-lbl" style="width:100%;position:static"><span class="muted">先新增一個階段,例如「需求確認」,再在階段裡加入任務。</span></div></div>`}
   </div>`;
   drawArrows(p);
-  // keep today in view on narrow screens
+  if (keepSL !== null && G.scrolled) { box.scrollLeft = keepSL; return; }
+  // first view of a project: keep today in view on narrow screens
   if (box.scrollWidth > box.clientWidth && t >= p.start && t <= rEnd && !G.scrolled) {
     box.scrollLeft = Math.max(0, (toDn(t) - p0) * dw - (W - labelW) / 3); G.scrolled = true;
   }
