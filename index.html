@@ -377,6 +377,7 @@ const Store = {
   list() { return Object.values(this.projects); },
   get(id) { return this.projects[id]; },
   save(p, now = false) {
+    deepHalf(p);
     p.updatedAt = new Date().toISOString();
     this.projects[p.id] = p;
     if (this.mode !== 'db') { this.saveLocal(); return; }
@@ -411,7 +412,17 @@ const Store = {
   },
 };
 
+/* Full-width Latin letters, digits and a few code-ish symbols -> half-width.
+   Chinese punctuation (,:;()!?「」) is left alone on purpose. */
+const FW_RE = /[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF0D\uFF0E\uFF0F\uFF3F\uFF20\uFF03\uFF06\uFF0B\uFF1D\uFF05]/g;
+const half = str => str.replace(FW_RE, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/\u3000/g, ' ');
+function deepHalf(o) {
+  if (Array.isArray(o)) { o.forEach((v, i) => { if (typeof v === 'string') o[i] = half(v); else if (v && typeof v === 'object') deepHalf(v); }); }
+  else if (o && typeof o === 'object') { Object.keys(o).forEach(k => { const v = o[k]; if (typeof v === 'string') o[k] = half(v); else if (v && typeof v === 'object') deepHalf(v); }); }
+  return o;
+}
 function normalize(p, id) {
+  deepHalf(p);
   p.id = p.id || id;
   p.client = p.client || ''; p.name = p.name || '未命名專案'; p.owner = p.owner || '';
   if (!isDate(p.start)) p.start = todayStr();
