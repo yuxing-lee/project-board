@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>專案進度看板</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 /* Layout: one working column; sticky project bar, a 7-day to-do strip, then a full-period Gantt grid. */
 :root{
@@ -16,9 +16,9 @@
   --weekend:#edf0f5; --today:#e0453f;
   --ok:#24935f; --ok-soft:#e1f3ea; --warn:#c77c12; --warn-soft:#fbf0dc; --bad:#d2403a; --bad-soft:#fbe5e3; --pause:#6f7888; --pause-soft:#eceef2;
   --shadow:0 1px 2px rgba(24,32,45,.06),0 4px 16px rgba(24,32,45,.06);
-  --f-ui:"IBM Plex Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --f-head:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --f-ui:"Nunito","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-head:"Nunito","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"Nunito","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11141a; --surface:#191d25; --surface-2:#1e232c; --ink:#e7eaf0; --muted:#a0a9b8; --faint:#737d8e;
@@ -48,7 +48,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 .muted{color:var(--muted)}
 
 /* buttons */
@@ -115,6 +115,42 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .status-select option{color:var(--ink);background:var(--surface)}
 
 .p-main{padding-block:20px 48px;display:flex;flex-direction:column;gap:22px}
+.p-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.p-layout.side-closed{grid-template-columns:minmax(0,1fr) 44px}
+.p-content{min-width:0;display:flex;flex-direction:column;gap:22px}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--head-h,72px) + 16px);max-height:calc(100vh - var(--head-h,72px) - 36px);overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-width:0}
+.side-h{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-bottom:1px solid var(--line)}
+.side-title{flex:1;font-family:var(--f-head);font-weight:700;font-size:14px;letter-spacing:.04em;white-space:nowrap}
+.side-count{font-size:12px;color:var(--muted)}
+.side-body{display:flex;flex-direction:column}
+.side-sec{padding:12px 12px 14px;display:flex;flex-direction:column;gap:8px}
+.side-sec+.side-sec{border-top:1px solid var(--line)}
+.side-sec h3{margin:0;font-family:var(--f-head);font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;display:flex;justify-content:space-between;align-items:baseline}
+.side-sec h3 .num{font-weight:500;letter-spacing:0}
+.side-progress{height:4px;border-radius:2px;background:var(--weekend);overflow:hidden}
+.side-progress i{display:block;height:100%;background:var(--ok);border-radius:2px}
+.check-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.check-list .empty-line{font-size:12.5px;color:var(--faint);padding:2px 4px}
+.side-add input{width:100%;border:1px dashed var(--line-strong);background:transparent;border-radius:6px;padding:6px 8px;font-size:13px}
+.side-add input:focus{border-style:solid;border-color:var(--accent);outline:none;background:var(--surface)}
+.notes-ta{width:100%;min-height:160px;border:1px solid var(--line-strong);border-radius:7px;padding:8px 10px;background:var(--surface-2);font-size:13px;line-height:1.6;resize:vertical}
+.notes-ta:focus{border-color:var(--accent);outline:2px solid var(--accent-soft);background:var(--surface)}
+.side-closed .side{overflow:visible}
+.side-closed .side-body{display:none}
+.side-closed .side-h{flex-direction:column;border-bottom:0;padding:8px 6px 12px;gap:10px}
+.side-closed .side-h .icon-btn{order:-1}
+.side-closed .side-title{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;line-height:1.15}
+.side-closed .side-title b{font-weight:700;display:block}
+.side-closed .side-count{display:none}
+@media (max-width:960px){
+  .p-layout,.p-layout.side-closed{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;max-height:none;order:-1}
+  .side-closed .side-h{flex-direction:row;padding:8px 8px 8px 14px}
+  .side-closed .side-h .icon-btn{order:0}
+  .side-closed .side-title{display:block}
+  .side-closed .side-title b{display:inline}
+  .side-closed .side-count{display:inline}
+}
 .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .sec-head h2{font-family:var(--f-head);font-size:15px;font-weight:700;margin:0;letter-spacing:.04em}
 .sec-head .sub{font-size:12.5px;color:var(--muted);margin-left:10px;font-weight:400;letter-spacing:0}
@@ -392,6 +428,9 @@ function normalize(p, id) {
     });
   });
   p.todos = (p.todos && typeof p.todos === 'object') ? p.todos : {};
+  p.checklist = Array.isArray(p.checklist) ? p.checklist.filter(x => x && x.text) : [];
+  p.checklist.forEach(x => { x.id = x.id || newId(); x.done = !!x.done; });
+  p.notes = typeof p.notes === 'string' ? p.notes : '';
   return p;
 }
 
@@ -518,6 +557,8 @@ function renderProject(p) {
     </div>
   </div></header>
   <main class="wrap p-main">
+   <div class="p-layout${sideClosed() ? ' side-closed' : ''}" id="p-layout">
+    <div class="p-content">
     <section id="todo-sec"></section>
     <section>
       <div class="sec-head"><h2>甘特圖<span class="sub">拖曳長條改日期,拉兩端調整工期</span></h2>
@@ -528,9 +569,47 @@ function renderProject(p) {
       </div>
     </section>
     <div class="footnote">${saveStateHtml()}</div>
+    </div>
+    <aside class="side" id="side" aria-label="專案待辦與注意事項"></aside>
+   </div>
   </main>`;
+  setHeadH();
+  renderSide(p);
   renderTodos(p);
   renderGantt(p);
+}
+function setHeadH() { const h = $('.p-head'); if (h) document.documentElement.style.setProperty('--head-h', h.offsetHeight + 'px'); }
+const SIDE_KEY = 'project-gantt-side-closed';
+function sideClosed() {
+  try { const v = localStorage.getItem(SIDE_KEY); if (v !== null) return v === '1'; } catch (_) {}
+  return window.innerWidth < 960;
+}
+function setSideClosed(v) { try { localStorage.setItem(SIDE_KEY, v ? '1' : '0'); } catch (_) {} }
+function renderSide(p) {
+  const el = $('#side'); if (!el) return;
+  const closed = sideClosed();
+  const list = p.checklist; const done = list.filter(x => x.done).length;
+  el.innerHTML = `
+    <div class="side-h">
+      <span class="side-title">${closed ? [...'待辦與注意事項'].map(c => `<b>${c}</b>`).join('') : '專案待辦 · 注意事項'}</span>
+      ${list.length ? `<span class="side-count num">${done}/${list.length}</span>` : ''}
+      <button class="icon-btn" data-act="side-toggle" aria-expanded="${!closed}" aria-label="${closed ? '展開側邊欄' : '收合側邊欄'}" title="${closed ? '展開' : '收合'}">${closed ? ICON.left : ICON.right}</button>
+    </div>
+    <div class="side-body">
+      <section class="side-sec">
+        <h3>專案待辦${list.length ? `<span class="num">${done} / ${list.length} 完成</span>` : ''}</h3>
+        ${list.length ? `<div class="side-progress" aria-hidden="true"><i style="width:${done / list.length * 100}%"></i></div>` : ''}
+        <ul class="check-list">${list.length ? list.map(x => `<li class="todo${x.done ? ' done' : ''}">
+          <input type="checkbox" data-act="check-toggle" data-id="${x.id}" ${x.done ? 'checked' : ''} aria-label="完成">
+          <span class="tx">${esc(x.text)}</span>
+          <button class="del" data-act="check-del" data-id="${x.id}" aria-label="刪除">${ICON.x}</button></li>`).join('') : '<li class="empty-line">整個專案要完成的事,例如「申請門禁」「準備驗收文件」。</li>'}</ul>
+        <div class="side-add"><input type="text" id="check-in" data-check-add="1" placeholder="+ 新增待辦,按 Enter" aria-label="新增專案待辦"></div>
+      </section>
+      <section class="side-sec">
+        <h3>注意事項</h3>
+        <textarea class="notes-ta" id="notes-ta" placeholder="例如:進場需提前 3 天申請門禁;客戶窗口 王經理 分機 1234">${esc(p.notes)}</textarea>
+      </section>
+    </div>`;
 }
 
 function renderTodos(p) {
@@ -946,6 +1025,13 @@ document.addEventListener('click', e => {
     case 'week': { const d = +a.dataset.d; UI.weekOffset = d === 0 ? 0 : UI.weekOffset + d; renderTodos(p); break; }
     case 'todo-del': { const d = a.dataset.d; p.todos[d] = (p.todos[d] || []).filter(x => x.id !== a.dataset.id); if (!p.todos[d].length) delete p.todos[d]; Store.save(p); renderTodos(p); break; }
     case 'add-phase': openPhaseModal(p, null); break;
+    case 'side-toggle': {
+      const closed = !sideClosed(); setSideClosed(closed);
+      $('#p-layout').classList.toggle('side-closed', closed); renderSide(p);
+      const b = $('#gantt'); const sl = b ? b.scrollLeft : 0; renderGantt(p); if ($('#gantt')) $('#gantt').scrollLeft = sl;
+      break;
+    }
+    case 'check-del': p.checklist = p.checklist.filter(x => x.id !== a.dataset.id); Store.save(p); renderSide(p); break;
     case 'edit-phase': openPhaseModal(p, p.phases.find(x => x.id === a.dataset.id)); break;
     case 'toggle-phase': { const ph = p.phases.find(x => x.id === a.dataset.id); ph.collapsed = !ph.collapsed; Store.save(p); renderGantt(p); break; }
     case 'add-item': openItemModal(p, null, a.dataset.id); break;
@@ -955,18 +1041,33 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const a = e.target; const p = UI.pid ? Store.get(UI.pid) : null; if (!p) return;
   if (a.id === 'status-sel') { p.status = a.value; a.className = 'status-select st-' + p.status; Store.save(p); return; }
+  if (a.dataset.act === 'check-toggle') { const x = p.checklist.find(y => y.id === a.dataset.id); if (x) { x.done = a.checked; Store.save(p); renderSide(p); } return; }
   if (a.dataset.act === 'todo-toggle') { const x = (p.todos[a.dataset.d] || []).find(y => y.id === a.dataset.id); if (x) { x.done = a.checked; Store.save(p); a.closest('.todo').classList.toggle('done', x.done); } return; }
   if (a.dataset.act === 'toggle-done') { const f = findItem(p, a.dataset.id); if (f) { f.it.done = a.checked; Store.save(p); const b = $('#gantt'); const sl = b ? b.scrollLeft : 0; renderGantt(p); if ($('#gantt')) $('#gantt').scrollLeft = sl; } }
 });
+let notesT;
+document.addEventListener('input', e => {
+  if (e.target.id !== 'notes-ta') return;
+  const p = Store.get(UI.pid); if (!p) return;
+  p.notes = e.target.value;
+  clearTimeout(notesT); notesT = setTimeout(() => Store.save(p), 400);
+});
 document.addEventListener('keydown', e => {
-  const a = e.target; if (!a.dataset || !a.dataset.todoAdd || e.key !== 'Enter' || e.isComposing) return;
+  const a = e.target;
+  if (a.dataset && a.dataset.checkAdd && e.key === 'Enter' && !e.isComposing) {
+    const text = a.value.trim(); if (!text) return;
+    const p = Store.get(UI.pid); p.checklist.push({ id: newId(), text, done: false });
+    Store.save(p); renderSide(p); const ni = $('#check-in'); if (ni) ni.focus();
+    return;
+  }
+  if (!a.dataset || !a.dataset.todoAdd || e.key !== 'Enter' || e.isComposing) return;
   const text = a.value.trim(); if (!text) return;
   const p = Store.get(UI.pid); const d = a.dataset.todoAdd;
   (p.todos[d] = p.todos[d] || []).push({ id: newId(), text, done: false });
   Store.save(p); renderTodos(p);
   const ni = document.getElementById('todo-in-' + d); if (ni) ni.focus();
 });
-let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (UI.view === 'project') { const p = Store.get(UI.pid); if (p) renderGantt(p); } }, 150); });
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (UI.view === 'project') { const p = Store.get(UI.pid); if (p) { setHeadH(); renderGantt(p); } } }, 150); });
 window.addEventListener('hashchange', () => { G.scrolled = false; route(); });
 
 /* ---------- boot ---------- */
