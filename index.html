@@ -223,14 +223,23 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .g-lbl .add{opacity:.55}
 .g-row:hover .g-lbl .add{opacity:1}
 .g-track{position:relative;flex:none}
-.bar{position:absolute;top:7px;bottom:7px;border-radius:5px;background:var(--bar);color:var(--bar-ink);font-size:11px;font-family:var(--f-mono);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:grab;touch-action:none;user-select:none;z-index:2;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.bar{position:absolute;top:7px;bottom:7px;border-radius:5px;background:var(--bar);color:var(--bar-ink);font-size:11px;font-family:var(--f-mono);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:grab;touch-action:none;user-select:none;z-index:2;box-shadow:0 0 0 1px var(--surface)}
 .bar:active{cursor:grabbing}
 .bar.done{background:var(--bar-done);color:var(--ink)}
 .bar.conflict{box-shadow:0 0 0 2px var(--bad)}
 .bar .h-l,.bar .h-r{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
 .bar .h-l{left:0} .bar .h-r{right:0}
 .bar:hover .h-l,.bar:hover .h-r{background:rgba(255,255,255,.25)}
-.bar .bt{pointer-events:none;white-space:nowrap;padding:0 8px}
+.bar .bt{pointer-events:none;white-space:nowrap;padding:0 8px;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bar.named{font-family:var(--f-ui);font-weight:600;font-size:11.5px;justify-content:flex-start}
+.bar.named.short{justify-content:center}
+.bar.named.short .bt{padding:0 3px}
+.segs{display:flex;flex-direction:column;gap:6px}
+.seg-row{display:grid;grid-template-columns:minmax(0,1fr) 132px 132px 30px;gap:6px;align-items:center}
+.seg-row input{height:34px;border:1px solid var(--line-strong);border-radius:7px;padding:0 8px;background:var(--surface);width:100%;min-width:0}
+.seg-row input:focus{border-color:var(--accent);outline:2px solid var(--accent-soft)}
+.seg-head{display:grid;grid-template-columns:minmax(0,1fr) 132px 132px 30px;gap:6px;font-size:11.5px;color:var(--faint)}
+@media (max-width:560px){.seg-row{grid-template-columns:1fr 1fr 30px}.seg-row .sn{grid-column:1/-1}.seg-head{display:none}}
 .phase-bar{position:absolute;top:13px;height:8px;background:var(--phase);border-radius:2px;z-index:2;pointer-events:none}
 .phase-bar::before,.phase-bar::after{content:"";position:absolute;bottom:-5px;border:5px solid transparent;border-top-color:var(--phase)}
 .phase-bar::before{left:0;border-left-color:var(--phase)}
@@ -256,7 +265,7 @@ svg.g-arrows{position:absolute;top:0;pointer-events:none;z-index:2;overflow:visi
 
 /* modal */
 .overlay{position:fixed;inset:0;z-index:50;background:rgba(10,14,22,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(40px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
-.modal{width:100%;max-width:480px;background:var(--surface);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);border:1px solid var(--line)}
+.modal{width:100%;max-width:560px;background:var(--surface);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);border:1px solid var(--line)}
 .modal-h{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 4px}
 .modal-h h3{font-family:var(--f-head);margin:0;font-size:17px}
 .modal-b{padding:12px 20px;display:flex;flex-direction:column;gap:14px}
@@ -435,7 +444,14 @@ function normalize(p, id) {
       it.id = it.id || newId(); it.kind = it.kind === 'milestone' ? 'milestone' : 'task';
       it.deps = Array.isArray(it.deps) ? it.deps : []; it.done = !!it.done;
       if (it.kind === 'milestone') { if (!isDate(it.date)) it.date = p.start; }
-      else { if (!isDate(it.start)) it.start = p.start; if (!isDate(it.end) || it.end < it.start) it.end = it.start; }
+      else {
+        if (!isDate(it.start)) it.start = p.start; if (!isDate(it.end) || it.end < it.start) it.end = it.start;
+        if (!Array.isArray(it.segs) || !it.segs.length) it.segs = [{ id: newId(), name: '', start: it.start, end: it.end }];
+        it.segs = it.segs.filter(x => x && typeof x === 'object');
+        if (!it.segs.length) it.segs = [{ id: newId(), name: '', start: it.start, end: it.end }];
+        it.segs.forEach(x => { x.id = x.id || newId(); x.name = typeof x.name === 'string' ? x.name : ''; if (!isDate(x.start)) x.start = it.start; if (!isDate(x.end) || x.end < x.start) x.end = x.start; });
+        syncTask(it);
+      }
     });
   });
   p.todos = (p.todos && typeof p.todos === 'object') ? p.todos : {};
@@ -448,6 +464,12 @@ function normalize(p, id) {
 /* ---------- domain helpers ---------- */
 const allItems = p => p.phases.flatMap(ph => ph.items.map(it => ({ it, ph })));
 const findItem = (p, id) => { for (const ph of p.phases) { const it = ph.items.find(x => x.id === id); if (it) return { it, ph }; } return null; };
+function syncTask(it) {
+  if (it.kind !== 'task' || !it.segs || !it.segs.length) return;
+  it.segs.sort((a, b) => a.start.localeCompare(b.start));
+  it.start = it.segs.reduce((m, x) => x.start < m ? x.start : m, it.segs[0].start);
+  it.end = it.segs.reduce((m, x) => x.end > m ? x.end : m, it.segs[0].end);
+}
 const itStart = it => it.kind === 'milestone' ? it.date : it.start;
 const itEnd = it => it.kind === 'milestone' ? it.date : it.end;
 function conflictPairs(p) {
@@ -572,7 +594,7 @@ function renderProject(p) {
     <div class="p-content">
     <section id="todo-sec"></section>
     <section>
-      <div class="sec-head"><h2>甘特圖<span class="sub">拖曳長條改日期,拉兩端調整工期</span></h2>
+      <div class="sec-head"><h2>甘特圖<span class="sub">拖曳長條改日期,拉兩端調整工期;點任務可新增多段進度條</span></h2>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${cc ? `<span class="conf-note">${ICON.warn}${cc} 個相依衝突</span>` : ''}<button class="btn sm" data-act="add-phase">${ICON.plus}新增階段</button></div>
       </div>
       <div class="gantt-box"><div class="gantt" id="gantt"></div>
@@ -707,8 +729,11 @@ function renderGantt(p) {
       const x = (toDn(it.date) - p0 + .5) * dw;
       shape = `<div class="mile${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px" title="${esc(it.name)} ${md(it.date)}"></div><span class="mile-lbl" data-ml="${it.id}" style="left:${x + 13}px">${md(it.date)}</span>`;
     } else {
-      const x = (toDn(it.start) - p0) * dw, w = (toDn(it.end) - toDn(it.start) + 1) * dw;
-      shape = `<div class="bar${it.done ? ' done' : ''}${bad ? ' conflict' : ''}" data-id="${it.id}" style="left:${x}px;width:${w}px" title="${esc(it.name)} ${md(it.start)}–${md(it.end)}"><span class="h-l"></span><span class="bt">${barText(it, w)}</span><span class="h-r"></span></div>`;
+      shape = it.segs.map((sg, si) => {
+        const x = (toDn(sg.start) - p0) * dw, w = (toDn(sg.end) - toDn(sg.start) + 1) * dw;
+        const tip = `${sg.name ? sg.name + ' · ' : ''}${it.name} ${md(sg.start)}–${md(sg.end)}`;
+        return `<div class="bar${sg.name ? ' named' : ''}${sg.name && w < 60 ? ' short' : ''}${it.done ? ' done' : ''}${bad && si === 0 ? ' conflict' : ''}" data-id="${it.id}" data-seg="${sg.id}" style="left:${x}px;width:${w}px" title="${esc(tip)}"><span class="h-l"></span><span class="bt">${sg.name ? esc(sg.name) : barText(sg, w)}</span><span class="h-r"></span></div>`;
+      }).join('');
     }
     return `<div class="g-row task${it.done ? ' is-done' : ''}" style="height:${rowH}px">${lbl}<div class="g-track" style="width:${tw}px">${shape}</div></div>`;
   }).join('');
@@ -769,8 +794,10 @@ document.addEventListener('pointerdown', e => {
   if (!el || UI.view !== 'project' || e.button > 0) return;
   const p = Store.get(UI.pid); const f = findItem(p, el.dataset.id); if (!f) return;
   const it = f.it;
+  const sg = el.dataset.seg && it.segs ? it.segs.find(x => x.id === el.dataset.seg) : null;
+  if (it.kind === 'task' && !sg) return;
   const mode = e.target.classList.contains('h-l') ? 'l' : e.target.classList.contains('h-r') ? 'r' : 'm';
-  drag = { p, it, el, mode, x0: e.clientX, s0: toDn(itStart(it)), e0: toDn(itEnd(it)), moved: false, pointerId: e.pointerId };
+  drag = { p, it, sg, el, mode, x0: e.clientX, s0: toDn(sg ? sg.start : itStart(it)), e0: toDn(sg ? sg.end : itEnd(it)), moved: false, pointerId: e.pointerId };
   try { el.setPointerCapture(e.pointerId); } catch (_) {}
   e.preventDefault();
 });
@@ -792,10 +819,11 @@ document.addEventListener('pointermove', e => {
     if (mode === 'm') { const len = e0 - s0; ns = clamp(s0 + d, ps, pe - len); ne = ns + len; }
     else if (mode === 'l') ns = clamp(s0 + d, ps, e0);
     else ne = clamp(e0 + d, s0, pe);
-    it.start = fromDn(ns); it.end = fromDn(ne);
+    const sg = drag.sg;
+    sg.start = fromDn(ns); sg.end = fromDn(ne); syncTask(it);
     const w = (ne - ns + 1) * G.dw;
     el.style.left = (ns - G.p0) * G.dw + 'px'; el.style.width = w + 'px';
-    const bt = el.querySelector('.bt'); if (bt) bt.textContent = w >= 34 ? `${md(it.start)}–${md(it.end)}`.length * 6.5 < w ? `${md(it.start)}–${md(it.end)}` : barText(it, w) : '';
+    const bt = el.querySelector('.bt'); if (bt && !sg.name) bt.textContent = barText(sg, w);
   }
   drawArrows(drag.p);
 });
@@ -803,14 +831,15 @@ const endDrag = e => {
   if (!drag || (e && e.pointerId !== drag.pointerId)) return;
   const d = drag; drag = null;
   if (d.moved) {
-    const changed = toDn(itStart(d.it)) !== d.s0 || toDn(itEnd(d.it)) !== d.e0;
+    const cs = d.sg ? d.sg.start : itStart(d.it), ce = d.sg ? d.sg.end : itEnd(d.it);
+    const changed = toDn(cs) !== d.s0 || toDn(ce) !== d.e0;
     if (changed) { Store.save(d.p); renderProject(d.p); restoreScroll(); }
   } else openItemModal(d.p, d.it.id);
 };
 let ganttScroll = 0;
 function restoreScroll() { const b = $('#gantt'); if (b) b.scrollLeft = ganttScroll; }
 document.addEventListener('pointerup', e => { const b = $('#gantt'); if (b) ganttScroll = b.scrollLeft; endDrag(e); });
-document.addEventListener('pointercancel', e => { if (drag) { const d = drag; drag = null; if (d.mode === 'm' || true) { if (d.it.kind === 'milestone') d.it.date = fromDn(d.s0); else { d.it.start = fromDn(d.s0); d.it.end = fromDn(d.e0); } renderGantt(d.p); } } });
+document.addEventListener('pointercancel', e => { if (drag) { const d = drag; drag = null; if (d.mode === 'm' || true) { if (d.it.kind === 'milestone') d.it.date = fromDn(d.s0); else if (d.sg) { d.sg.start = fromDn(d.s0); d.sg.end = fromDn(d.e0); syncTask(d.it); } renderGantt(d.p); } } });
 
 /* ---------- modals ---------- */
 function openModal(html, mount) {
@@ -862,7 +891,7 @@ function openProjectModal(p) {
         // keep items inside the new range
         allItems(p).forEach(({ it }) => {
           if (it.kind === 'milestone') it.date = fromDn(clamp(toDn(it.date), toDn(s), toDn(en)));
-          else { it.start = fromDn(clamp(toDn(it.start), toDn(s), toDn(en))); it.end = fromDn(clamp(toDn(it.end), toDn(it.start), toDn(en))); }
+          else { it.segs.forEach(sg => { sg.start = fromDn(clamp(toDn(sg.start), toDn(s), toDn(en))); sg.end = fromDn(clamp(toDn(sg.end), toDn(sg.start), toDn(en))); }); syncTask(it); }
         });
         Store.save(p); closeModal(); renderProject(p); toast('已儲存');
       }
@@ -915,6 +944,7 @@ function openItemModal(p, itemId, newPhaseId) {
   const defStart = (t >= p.start && t <= p.end) ? t : p.start;
   const it = f ? f.it : { kind: 'task', name: '', start: defStart, end: fromDn(Math.min(toDn(defStart) + 2, toDn(p.end))), date: defStart, deps: [], done: false };
   const curPhase = f ? f.ph.id : newPhaseId;
+  let segs = (it.segs && it.segs.length ? it.segs : [{ id: newId(), name: '', start: it.start || defStart, end: it.end || defStart }]).map(x => ({ ...x }));
   let kind = it.kind;
   const depList = p.phases.map(ph => {
     const opts = ph.items.filter(x => x.id !== it.id).map(x => `<label><input type="checkbox" name="dep" value="${x.id}" ${it.deps.includes(x.id) ? 'checked' : ''}>${x.kind === 'milestone' ? '◆ ' : ''}${esc(x.name)}<span class="d">${x.kind === 'milestone' ? md(x.date) : md(x.start) + '–' + md(x.end)}</span></label>`).join('');
@@ -925,9 +955,10 @@ function openItemModal(p, itemId, newPhaseId) {
       <div class="seg" role="group" aria-label="類型"><button type="button" data-kind="task">任務</button><button type="button" data-kind="milestone">里程碑</button></div>
       <div class="field"><label for="if-name">名稱</label><input type="text" id="if-name" value="${esc(it.name)}" placeholder="例如:設備進場"></div>
       <div class="field"><label for="if-phase">所屬階段</label><select id="if-phase">${p.phases.map(ph => `<option value="${ph.id}"${ph.id === curPhase ? ' selected' : ''}>${esc(ph.name)}</option>`).join('')}</select></div>
-      <div class="row2" id="if-range">
-        <div class="field"><label for="if-start">開始日</label><input type="date" id="if-start" min="${p.start}" max="${p.end}" value="${it.start || defStart}"></div>
-        <div class="field"><label for="if-end">結束日</label><input type="date" id="if-end" min="${p.start}" max="${p.end}" value="${it.end || defStart}"></div>
+      <div class="field" id="if-range"><span class="lb">進度條 · 可分成多段,每段填子任務名稱就會顯示在長條上</span>
+        <div class="seg-head"><span>子任務名稱</span><span>開始日</span><span>結束日</span><span></span></div>
+        <div class="segs" id="if-segs"></div>
+        <div><button type="button" class="btn sm" id="if-addseg">${ICON.plus}新增進度條</button></div>
       </div>
       <div class="field" id="if-datef"><label for="if-date">日期</label><input type="date" id="if-date" min="${p.start}" max="${p.end}" value="${it.date || it.end || defStart}"></div>
       <label class="check-line"><input type="checkbox" id="if-done" ${it.done ? 'checked' : ''}>已完成</label>
@@ -937,6 +968,26 @@ function openItemModal(p, itemId, newPhaseId) {
     <div class="modal-f">${isNew ? '' : `<button class="btn danger" type="button" id="if-del">刪除</button>`}
       <div class="r"><button class="btn" data-act="close-modal">取消</button><button class="btn primary" type="submit" form="iform">${isNew ? '新增' : '儲存'}</button></div></div>`,
   () => {
+    const readSegs = () => { document.querySelectorAll('#if-segs .seg-row').forEach((r, i) => { segs[i].name = r.querySelector('.sn').value.trim(); segs[i].start = r.querySelector('.ss').value; segs[i].end = r.querySelector('.se').value; }); };
+    const drawSegs = () => {
+      $('#if-segs').innerHTML = segs.map((sg, i) => `<div class="seg-row">
+        <input type="text" class="sn" id="seg-n-${sg.id}" value="${esc(sg.name)}" placeholder="${segs.length > 1 ? '例如:第 ' + (i + 1) + ' 批' : '可留空'}" aria-label="子任務名稱">
+        <input type="date" class="ss" id="seg-s-${sg.id}" min="${p.start}" max="${p.end}" value="${sg.start}" aria-label="開始日">
+        <input type="date" class="se" id="seg-e-${sg.id}" min="${p.start}" max="${p.end}" value="${sg.end}" aria-label="結束日">
+        <button type="button" class="icon-btn" data-segdel="${i}" aria-label="刪除這段進度條" ${segs.length < 2 ? 'disabled style="opacity:.3;cursor:default"' : ''}>${ICON.x}</button></div>`).join('');
+    };
+    drawSegs();
+    $('#if-addseg').addEventListener('click', () => {
+      readSegs();
+      const last = segs.reduce((m, x) => isDate(x.end) && x.end > m ? x.end : m, p.start);
+      const ns = last < p.end ? addDays(last, 1) : p.end;
+      segs.push({ id: newId(), name: '', start: ns, end: fromDn(Math.min(toDn(ns) + 2, toDn(p.end))) });
+      drawSegs(); const n = document.getElementById('seg-n-' + segs[segs.length - 1].id); if (n) n.focus();
+    });
+    $('#if-segs').addEventListener('click', e => {
+      const b = e.target.closest('[data-segdel]'); if (!b || segs.length < 2) return;
+      readSegs(); segs.splice(+b.dataset.segdel, 1); drawSegs();
+    });
     const setKind = k => { kind = k; document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.kind === k)); $('#if-range').hidden = k !== 'task'; $('#if-datef').hidden = k !== 'milestone'; };
     document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => setKind(b.dataset.kind)));
     setKind(kind);
@@ -946,13 +997,18 @@ function openItemModal(p, itemId, newPhaseId) {
       const inR = d => isDate(d) && d >= p.start && d <= p.end;
       const rec = { name, kind, done: $('#if-done').checked, deps: [...document.querySelectorAll('input[name=dep]:checked')].map(x => x.value) };
       if (kind === 'task') {
-        const s = $('#if-start').value, en = $('#if-end').value;
-        if (!inR(s) || !inR(en)) { $('#if-err').textContent = `日期需在專案期間內(${md(p.start)}–${md(p.end)})`; return; }
-        if (en < s) { $('#if-err').textContent = '結束日不能早於開始日'; return; }
-        rec.start = s; rec.end = en; rec.date = undefined;
+        readSegs();
+        for (let i = 0; i < segs.length; i++) {
+          const sg = segs[i], lbl = segs.length > 1 ? `第 ${i + 1} 段進度條` : '進度條';
+          if (!inR(sg.start) || !inR(sg.end)) { $('#if-err').textContent = `${lbl}的日期需在專案期間內(${md(p.start)}–${md(p.end)})`; return; }
+          if (sg.end < sg.start) { $('#if-err').textContent = `${lbl}的結束日不能早於開始日`; return; }
+        }
+        rec.segs = segs.map(x => ({ id: x.id, name: half(x.name), start: x.start, end: x.end }));
+        const tmp = { kind: 'task', segs: rec.segs }; syncTask(tmp);
+        rec.segs = tmp.segs; rec.start = tmp.start; rec.end = tmp.end; rec.date = undefined;
       } else {
         const d = $('#if-date').value; if (!inR(d)) { $('#if-err').textContent = `日期需在專案期間內(${md(p.start)}–${md(p.end)})`; return; }
-        rec.date = d; rec.start = undefined; rec.end = undefined;
+        rec.date = d; rec.start = undefined; rec.end = undefined; rec.segs = undefined;
       }
       const target = p.phases.find(x => x.id === $('#if-phase').value);
       if (isNew) { target.items.push(Object.assign({ id: newId() }, clean(rec))); }
