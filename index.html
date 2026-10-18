@@ -361,6 +361,7 @@ svg.g-arrows{position:absolute;top:0;pointer-events:none;z-index:2;overflow:visi
 <div id="modal-root"></div>
 <input type="file" id="import-file" accept="application/json,.json" hidden>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (() => {
 'use strict';
@@ -403,9 +404,13 @@ const ICON = {
 
 /* ---------- storage ---------- */
 const LS_KEY = 'project-gantt-v1';
+/* Cloud sync for the stand-alone (Vercel) build. Empty values = this browser only. */
+const SB = { url: "https://ulhcyjtvupwgynhgmglw.supabase.co", key: "sb_publishable_ZIN9FEpzD6yHUeq47k-1KA_8XWIIrrM" };
+const LOGIN_EMAIL = "zhang200221@gmail.com";
 const Store = {
-  mode: 'local', db: null, uid: null, projects: {}, timers: {}, chains: {}, pending: 0, failed: false,
+  mode: 'local', db: null, uid: null, sb: null, user: null, needLogin: false, initError: '', projects: {}, timers: {}, chains: {}, pending: 0, failed: false,
   async init() {
+    if (!window.claude && SB.url && SB.key && window.supabase) return this.initCloud();
     try {
       if (window.claude && typeof window.claude.use === 'function') {
         const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
@@ -424,6 +429,38 @@ const Store = {
     this.loadLocal();
   },
   col() { return this.db.collection('data/users/' + this.uid); },
+  async initCloud() {
+    this.mode = 'supa';
+    this.sb = window.supabase.createClient(SB.url, SB.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    this.sb.auth.onAuthStateChange((ev, session) => {
+      if (ev === 'SIGNED_OUT') { this.user = null; this.projects = {}; this.needLogin = true; renderLogin(); }
+    });
+    const { data: { session } } = await this.sb.auth.getSession();
+    if (!session) { this.needLogin = true; return; }
+    this.user = session.user;
+    try { await this.pull(); await this.migrateLocal(); }
+    catch (e) { console.error(e); this.initError = (e && e.message) || String(e); }
+  },
+  async pull() {
+    const { data, error } = await this.sb.from('projects').select('id,data');
+    if (error) throw error;
+    const next = {};
+    (data || []).forEach(r => { if (r && r.data) next[r.id] = normalize(r.data, r.id); });
+    this.projects = next;
+  },
+  /* first sign-in on a browser that already holds projects: copy them up once */
+  async migrateLocal() {
+    let local = null;
+    try { local = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (localStorage.getItem(LS_KEY + '-uploaded')) local = null; } catch (_) {}
+    const list = local ? Object.values(local).filter(p => p && p.id && !this.projects[p.id]) : [];
+    if (!list.length) return;
+    const rows = list.map(p => { const n = normalize(p, p.id); this.projects[n.id] = n; return { id: n.id, user_id: this.user.id, data: n, updated_at: new Date().toISOString() }; });
+    const { error } = await this.sb.from('projects').upsert(rows, { onConflict: 'user_id,id' });
+    if (error) throw error;
+    try { localStorage.setItem(LS_KEY + '-uploaded', new Date().toISOString()); } catch (_) {}
+    this.migrated = rows.length;
+  },
+  busy() { return this.pending > 0 || Object.keys(this.timers).length > 0; },
   loadLocal() {
     this.mode = 'local';
     try {
@@ -438,7 +475,7 @@ const Store = {
     deepHalf(p);
     p.updatedAt = new Date().toISOString();
     this.projects[p.id] = p;
-    if (this.mode !== 'db') { this.saveLocal(); return; }
+    if (this.mode === 'local') { this.saveLocal(); return; }
     clearTimeout(this.timers[p.id]);
     this.setState('saving');
     const run = () => {
@@ -446,7 +483,9 @@ const Store = {
       const body = JSON.parse(JSON.stringify(this.projects[p.id]));
       this.pending++;
       this.chains[p.id] = (this.chains[p.id] || Promise.resolve())
-        .then(() => this.col().doc(p.id).set(body))
+        .then(() => this.mode === 'supa'
+          ? this.sb.from('projects').upsert({ id: p.id, user_id: this.user.id, data: body, updated_at: new Date().toISOString() }, { onConflict: 'user_id,id' }).then(r => { if (r.error) throw r.error; })
+          : this.col().doc(p.id).set(body))
         .then(() => { this.pending--; this.failed = false; if (!this.pending) this.setState('ok'); })
         .catch(e => { this.pending--; this.failed = true; this.setState('fail'); console.error(e); toast(e && e.code === 'quota_exceeded' ? '儲存空間已滿,請刪除部分專案' : '儲存失敗,請檢查連線後再修改一次'); });
     };
@@ -455,10 +494,12 @@ const Store = {
   remove(id) {
     clearTimeout(this.timers[id]); delete this.timers[id];
     delete this.projects[id];
-    if (this.mode !== 'db') { this.saveLocal(); return; }
+    if (this.mode === 'local') { this.saveLocal(); return; }
     this.setState('saving'); this.pending++;
     this.chains[id] = (this.chains[id] || Promise.resolve())
-      .then(() => this.col().doc(id).delete())
+      .then(() => this.mode === 'supa'
+        ? this.sb.from('projects').delete().eq('id', id).then(r => { if (r.error) throw r.error; })
+        : this.col().doc(id).delete())
       .then(() => { this.pending--; if (!this.pending) this.setState('ok'); })
       .catch(() => { this.pending--; this.setState('fail'); toast('刪除失敗,請稍後再試'); });
   },
@@ -466,7 +507,7 @@ const Store = {
     const el = $('#savestate'); if (!el) return;
     el.className = 'savestate ' + (s === 'ok' ? '' : s);
     const t = el.querySelector('.t');
-    if (t) t.textContent = s === 'saving' ? '儲存中…' : s === 'fail' ? '儲存失敗' : (this.mode === 'db' ? '已儲存到你的帳號' : '已儲存於此瀏覽器');
+    if (t) t.textContent = s === 'saving' ? '儲存中…' : s === 'fail' ? '儲存失敗' : saveOkText();
   },
 };
 
@@ -642,7 +683,8 @@ function render() {
   window.scrollTo(0, 0);
 }
 
-const saveStateHtml = () => `<span id="savestate" class="savestate"><span class="dot"></span><span class="t">${Store.mode === 'db' ? '已儲存到你的帳號' : '已儲存於此瀏覽器'}</span></span>`;
+const saveOkText = () => Store.mode === 'supa' ? '已同步到雲端' : Store.mode === 'db' ? '已儲存到你的帳號' : '已儲存於此瀏覽器';
+const saveStateHtml = () => `<span id="savestate" class="savestate"><span class="dot"></span><span class="t">${saveOkText()}</span></span>`;
 
 /* ---------- home ---------- */
 function renderHome() {
@@ -669,6 +711,7 @@ function renderHome() {
   <header class="topbar"><div class="wrap">
     <div class="brand"><h1>專案進度看板</h1><span class="date num">${ymd(t)}(${WD[dow(t)]})</span></div>
     <div class="actions">
+      ${Store.mode === 'supa' ? `<button class="btn ghost" data-act="logout">登出</button>` : ''}
       <button class="btn" data-act="export">${ICON.down}匯出備份</button>
       <button class="btn" data-act="import">${ICON.up}匯入備份</button>
       <button class="btn primary" data-act="new-project">${ICON.plus}新增專案</button>
@@ -679,7 +722,7 @@ function renderHome() {
     <div class="home-dir"><div class="sec-head"><h2>專案目錄</h2></div><div class="home-summary"><span><b>${list.length}</b>個專案</span><span><b>${counts.active}</b>進行中</span><span><b>${counts.late}</b>延遲</span><span><b>${counts.pause}</b>暫停</span><span><b>${counts.done}</b>完成</span></div>
     <div class="cards">${cards}</div></div>` :
     `<div class="empty"><h2>還沒有專案</h2><p>按「新增專案」,填入客戶、專案名稱和起訖日期,就會建立專案的甘特圖。</p><button class="btn primary" data-act="new-project">${ICON.plus}新增專案</button></div>`}
-    <div class="footnote">${saveStateHtml()}<span>${Store.mode === 'db' ? '資料存在你的 Claude 帳號,換裝置也看得到。' : '資料只存在這個瀏覽器,建議定期匯出備份。'}</span></div>
+    <div class="footnote">${saveStateHtml()}<span>${Store.mode === 'supa' ? `已登入 ${esc(Store.user && Store.user.email || '')},資料存在雲端,換裝置登入就看得到。` : Store.mode === 'db' ? '資料存在你的 Claude 帳號,換裝置也看得到。' : '資料只存在這個瀏覽器,建議定期匯出備份。'}</span></div>
   </main>`;
   if ($('#todo-sec')) renderTodos(null);
 }
@@ -1309,6 +1352,7 @@ document.addEventListener('click', e => {
     case 'new-project': openProjectModal(null); break;
     case 'edit-project': openProjectModal(p); break;
     case 'export': doExport(); break;
+    case 'logout': Store.sb.auth.signOut(); break;
     case 'import': $('#import-file').click(); break;
     case 'close-modal': e.preventDefault(); closeModal(); break;
     case 'week': {
@@ -1389,9 +1433,59 @@ document.addEventListener('keydown', e => {
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (UI.view === 'project') { const p = Store.get(UI.pid); if (p) { setHeadH(); renderGantt(p); } } }, 150); });
 window.addEventListener('hashchange', () => { G.scrolled = false; route(); });
 
+/* ---------- cloud sign-in ---------- */
+function renderLogin() {
+  closeModal();
+  $('#app').innerHTML = `
+  <main class="wrap" style="padding-block:64px">
+    <div class="card" style="max-width:420px;margin:0 auto;cursor:default;gap:14px">
+      <h2 style="margin:0">專案進度看板</h2>
+      <p class="hint" style="margin:0;line-height:1.7">輸入你的 Email,我們會寄一封登入信。點信裡的連結就會回到這裡並完成登入,每台設備只需要登入一次。</p>
+      <form id="login-form" class="field" novalidate>
+        <label for="login-email">Email</label>
+        <input type="text" id="login-email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(LOGIN_EMAIL)}">
+        <button class="btn primary" type="submit" style="margin-top:6px;justify-content:center">寄送登入連結</button>
+        <div class="err" id="login-msg" role="status"></div>
+      </form>
+    </div>
+  </main>`;
+  $('#login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('#login-email').value.trim(), msg = $('#login-msg');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = '請輸入正確的 Email'; return; }
+    msg.style.color = 'var(--muted)'; msg.textContent = '寄送中…';
+    const { error } = await Store.sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (error) { msg.style.color = 'var(--bad)'; msg.textContent = error.status === 429 ? '寄太多次了,請過幾分鐘再試' : '寄送失敗:' + error.message; return; }
+    msg.style.color = 'var(--ok)'; msg.textContent = `已寄到 ${email},請到信箱點登入連結(沒看到的話檢查垃圾郵件)。`;
+  });
+}
+function renderInitError() {
+  $('#app').innerHTML = `<main class="wrap" style="padding-block:64px"><div class="card" style="max-width:520px;margin:0 auto;cursor:default">
+    <h2 style="margin:0">讀不到雲端資料</h2>
+    <p class="hint" style="margin:0;line-height:1.7">請確認 Supabase 已建立 projects 資料表,並檢查網路連線後重新整理頁面。</p>
+    <p class="mono" style="margin:0;font-size:12px;color:var(--bad);overflow-wrap:anywhere">${esc(Store.initError)}</p>
+    <div><button class="btn" data-act="logout">登出</button></div></div></main>`;
+}
+/* pick up edits made on another device when this tab comes back into view */
+let lastPull = 0;
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || Store.mode !== 'supa' || !Store.user || Store.busy() || drag || $('#modal-root').innerHTML) return;
+  if (Date.now() - lastPull < 15000) return;
+  lastPull = Date.now();
+  try {
+    await Store.pull();
+    if (UI.view === 'project' && !Store.get(UI.pid)) go(null);
+    else if (UI.view === 'project') renderProject(Store.get(UI.pid));
+    else { const y = window.scrollY; renderHome(); window.scrollTo(0, y); }
+  } catch (e) { console.warn('refresh failed', e); }
+});
+
 /* ---------- boot ---------- */
 (async () => {
   await Store.init();
+  if (Store.needLogin) { renderLogin(); return; }
+  if (Store.initError) { renderInitError(); return; }
+  if (Store.migrated) setTimeout(() => toast(`已把這個瀏覽器裡的 ${Store.migrated} 個專案上傳到雲端`), 300);
   Store.list().forEach(p => { if (rollover(p)) Store.save(p); });
   route();
 })();
