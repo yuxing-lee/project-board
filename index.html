@@ -162,7 +162,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .tabs button{border:0;background:transparent;padding:6px 16px;border-radius:6px;font-weight:600;color:var(--muted)}
 .tabs button:hover{color:var(--ink)}
 .tabs button.on{background:var(--accent);color:var(--accent-ink)}
-.home-week{margin-top:32px;padding-top:24px;border-top:1px solid var(--line)}
+.home-dir{margin-top:32px;padding-top:24px;border-top:1px solid var(--line)}
 .home-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 .filters{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
 .filters label{font-size:12.5px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
@@ -675,9 +675,9 @@ function renderHome() {
     </div>
   </div></header>
   <main class="wrap home-main">
-    ${list.length ? `<div class="sec-head"><h2>專案目錄</h2></div><div class="home-summary"><span><b>${list.length}</b>個專案</span><span><b>${counts.active}</b>進行中</span><span><b>${counts.late}</b>延遲</span><span><b>${counts.pause}</b>暫停</span><span><b>${counts.done}</b>完成</span></div>
-    <div class="cards">${cards}</div>
-    <section id="todo-sec" class="home-week"></section>` :
+    ${list.length ? `<section id="todo-sec"></section>
+    <div class="home-dir"><div class="sec-head"><h2>專案目錄</h2></div><div class="home-summary"><span><b>${list.length}</b>個專案</span><span><b>${counts.active}</b>進行中</span><span><b>${counts.late}</b>延遲</span><span><b>${counts.pause}</b>暫停</span><span><b>${counts.done}</b>完成</span></div>
+    <div class="cards">${cards}</div></div>` :
     `<div class="empty"><h2>還沒有專案</h2><p>按「新增專案」,填入客戶、專案名稱和起訖日期,就會建立專案的甘特圖。</p><button class="btn primary" data-act="new-project">${ICON.plus}新增專案</button></div>`}
     <div class="footnote">${saveStateHtml()}<span>${Store.mode === 'db' ? '資料存在你的 Claude 帳號,換裝置也看得到。' : '資料只存在這個瀏覽器,建議定期匯出備份。'}</span></div>
   </main>`;
